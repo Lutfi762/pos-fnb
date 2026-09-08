@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
+/* Self-hosted fonts. No CDN, so the app keeps its typography while offline. */
+@import '@fontsource-variable/bricolage-grotesque/index.css';
+@import '@fontsource-variable/plus-jakarta-sans/index.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
@@ -8,32 +13,104 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+/*
+| Every token is declared here first. The dark block below only overrides
+| values, it never introduces a token that does not exist in light mode.
+*/
+:root {
+    /* Brand */
+    --brand: #0e7157;
+    --brand-dark: #0a3a2e;
+    --brand-accent: #3fa98a;
+    --brand-contrast: #ffffff;
 
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
+    /* Semantic state, kept separate from brand */
+    --state-pending: #d98a2b;
+    --state-pending-surface: #fdf3e6;
+    --state-pending-text: #7a4a10;
+    --state-danger: #b8402f;
+    --state-danger-surface: #fdecea;
+    --state-danger-text: #7d2419;
+    --state-done: #0e7157;
+    --state-done-surface: #e6f2ee;
+    --state-done-text: #0a3a2e;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    /* Neutrals */
+    --base: #f0f3ef;
+    --surface: #ffffff;
+    --surface-sunken: #e7ebe5;
+    --text: #101b18;
+    --text-muted: #5a6763;
+    --border: #d9e0da;
+    --border-strong: #b9c4bc;
+    --overlay: rgb(16 27 24 / 0.45);
+
+    /* Motion */
+    --dur-fast: 120ms;
+    --dur-base: 180ms;
+    --dur-slow: 260ms;
+    --dur-moment: 700ms;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@layer theme {
-    .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
-    }
+.dark {
+    --brand: #3fa98a;
+    --brand-dark: #0a3a2e;
+    --brand-accent: #5cc3a4;
+    --brand-contrast: #06120e;
+
+    --state-pending: #e5a34f;
+    --state-pending-surface: #2e2312;
+    --state-pending-text: #f2cf9c;
+    --state-danger: #d9614f;
+    --state-danger-surface: #2f1714;
+    --state-danger-text: #f0b0a5;
+    --state-done: #3fa98a;
+    --state-done-surface: #10241e;
+    --state-done-text: #9ad9c4;
+
+    --base: #0b1311;
+    --surface: #121d1a;
+    --surface-sunken: #0f1815;
+    --text: #e6eee9;
+    --text-muted: #9aaaa4;
+    --border: #22322d;
+    --border-strong: #33463f;
+    --overlay: rgb(3 8 7 / 0.6);
+}
+
+@theme inline {
+    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', monospace;
+
+    --color-brand: var(--brand);
+    --color-brand-dark: var(--brand-dark);
+    --color-brand-accent: var(--brand-accent);
+    --color-brand-contrast: var(--brand-contrast);
+
+    --color-pending: var(--state-pending);
+    --color-pending-surface: var(--state-pending-surface);
+    --color-pending-text: var(--state-pending-text);
+    --color-danger: var(--state-danger);
+    --color-danger-surface: var(--state-danger-surface);
+    --color-danger-text: var(--state-danger-text);
+    --color-done: var(--state-done);
+    --color-done-surface: var(--state-done-surface);
+    --color-done-text: var(--state-done-text);
+
+    --color-base: var(--base);
+    --color-surface: var(--surface);
+    --color-surface-sunken: var(--surface-sunken);
+    --color-content: var(--text);
+    --color-content-muted: var(--text-muted);
+    --color-line: var(--border);
+    --color-line-strong: var(--border-strong);
+
+    --color-accent: var(--brand);
+    --color-accent-content: var(--brand);
+    --color-accent-foreground: var(--brand-contrast);
 }
 
 @layer base {
@@ -43,7 +120,108 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--border, currentColor);
+    }
+
+    html {
+        /* Tabular figures everywhere so money columns never jitter. */
+        font-feature-settings: 'tnum' 1, 'lnum' 1, 'cv05' 1;
+        font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    body {
+        background-color: var(--base);
+        color: var(--text);
+        font-family: var(--font-sans);
+    }
+
+    /* Cashier screens are read standing up: never go below 15px. */
+    body {
+        font-size: 0.9375rem;
+        line-height: 1.5;
+    }
+
+    h1, h2, h3, .font-display {
+        font-family: var(--font-display);
+    }
+
+    code, kbd, samp, pre, .font-mono {
+        font-family: var(--font-mono);
+    }
+}
+
+@utility numeric {
+    font-variant-numeric: tabular-nums lining-nums;
+    text-align: right;
+}
+
+/* Motion only runs when the user has not asked for less of it. */
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes meja-rise {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @keyframes meja-draw {
+        from {
+            stroke-dashoffset: var(--draw-length, 400);
+        }
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes meja-pulse-soft {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.45;
+        }
+    }
+
+    @keyframes meja-shimmer {
+        from {
+            background-position: -160% 0;
+        }
+        to {
+            background-position: 160% 0;
+        }
+    }
+
+    .motion-rise {
+        animation: meja-rise var(--dur-slow) var(--ease-out) both;
+    }
+
+    .motion-draw {
+        stroke-dasharray: var(--draw-length, 400);
+        animation: meja-draw var(--dur-moment) var(--ease-out) both;
+    }
+
+    .motion-pulse-soft {
+        animation: meja-pulse-soft 2s var(--ease-out) infinite;
+    }
+
+    .motion-shimmer {
+        background-size: 200% 100%;
+        animation: meja-shimmer 1.4s linear infinite;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
     }
 }
 
