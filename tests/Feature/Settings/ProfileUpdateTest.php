@@ -68,7 +68,9 @@ class ProfileUpdateTest extends TestCase
             ->assertHasNoErrors()
             ->assertRedirect('/');
 
-        $this->assertNull($user->fresh());
+        // Soft deleted, not erased: past orders still point at this cashier.
+        $this->assertNull(User::find($user->id));
+        $this->assertNotNull(User::withTrashed()->find($user->id)->deleted_at);
         $this->assertFalse(auth()->check());
     }
 
