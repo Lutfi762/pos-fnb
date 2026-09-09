@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
@@ -28,6 +30,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property string|null $pin_hash
+ * @property bool $is_active
+ * @property string|null $last_outlet_id
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -86,6 +91,8 @@ class User extends Authenticatable implements PasskeyUser
     {
         $outletId = $outlet instanceof Outlet ? $outlet->getKey() : $outlet;
 
+        $this->loadMissing('outlets');
+
         $match = $this->outlets->firstWhere('id', $outletId);
 
         return $match instanceof Outlet
@@ -100,10 +107,46 @@ class User extends Authenticatable implements PasskeyUser
     {
         $outletId = $outlet instanceof Outlet ? $outlet->getKey() : $outlet;
 
+        $this->loadMissing('outlets');
+
+        return $this->isOwner()
+            || $this->outlets->contains(fn (Outlet $each): bool => $each->getKey() === $outletId);
+    }
+
+    /**
+     * Outlets this user may open, newest assignment order aside.
+     * Owners get every active outlet, even ones added after they were hired.
+     *
+     * @return Collection<int, Outlet>
+     */
+    public function accessibleOutlets(): Collection
+    {
+        $this->loadMissing('outlets');
+
+        return $this->isOwner()
+            ? Outlet::query()->where('is_active', true)->orderBy('name')->get()
+            : $this->outlets->where('is_active', true)->sortBy('name')->values();
+    }
+
+    /**
+     * Owners are not tied to the outlets they happen to be assigned to.
+     */
+    public function isOwner(): bool
+    {
+        $this->loadMissing('outlets');
+
         return $this->outlets->contains(
-            fn (Outlet $each): bool => $each->getKey() === $outletId
-                || $this->pivotRole($each)->seesAllOutlets(),
+            fn (Outlet $outlet): bool => $this->pivotRole($outlet)->seesAllOutlets(),
         );
+    }
+
+    /**
+     * Check a typed PIN against the stored hash.
+     * Users without a PIN can never unlock, they must sign in with a password.
+     */
+    public function verifyPin(string $pin): bool
+    {
+        return $this->pin_hash !== null && Hash::check($pin, $this->pin_hash);
     }
 
     /**

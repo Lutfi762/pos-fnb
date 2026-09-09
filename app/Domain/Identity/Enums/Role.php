@@ -24,4 +24,12 @@ enum Role: string
     {
         return $this === self::Owner;
     }
+
+    /**
+     * Roles allowed to manage the catalog, staff, and outlet settings.
+     */
+    public function managesOutlet(): bool
+    {
+        return $this === self::Owner || $this === self::Manager;
+    }
 }

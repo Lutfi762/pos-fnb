@@ -21,14 +21,15 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
+                <form method="POST" action="{{ route('lock.store') }}" class="w-full">
+                    @csrf
+                    <flux:sidebar.item as="button" type="submit" icon="lock-closed" class="w-full cursor-pointer" data-test="lock-button">
+                        {{ __('pin.lock') }}
+                    </flux:sidebar.item>
+                </form>
             </flux:sidebar.nav>
+
+            <x-outlet-badge class="mx-2 mb-2" />
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>

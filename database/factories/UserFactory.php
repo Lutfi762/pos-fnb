@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Domain\Identity\Enums\Role;
+use App\Domain\Identity\Models\Outlet;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -33,7 +35,38 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+            'is_active' => true,
         ];
+    }
+
+    /**
+     * Give the user a PIN so they can unlock a shared terminal.
+     */
+    public function withPin(string $pin = '123456'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'pin_hash' => Hash::make($pin),
+        ]);
+    }
+
+    /**
+     * Staff who left: kept for history, refused at the door.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+
+    /**
+     * Assign the user to an outlet with the given role.
+     */
+    public function atOutlet(Outlet $outlet, Role $role = Role::Cashier): static
+    {
+        return $this->afterCreating(function (User $user) use ($outlet, $role): void {
+            $user->outlets()->attach($outlet, ['role' => $role->value]);
+        });
     }
 
     /**
