@@ -26,17 +26,43 @@ class CatalogSeeder extends Seeder
     {
         $menu = [
             ['Kopi', 'kitchen' => 'bar', 'items' => [
-                ['Kopi Susu Gula Aren', [['Reguler', 25000], ['Besar', 30000]]],
+                ['Espresso', [['Single', 18000], ['Double', 23000]]],
                 ['Americano', [['Panas', 22000], ['Dingin', 25000]]],
-                ['Cappuccino', [['Reguler', 28000]]],
+                ['Kopi Susu Gula Aren', [['Reguler', 25000], ['Besar', 30000]]],
+                ['Cappuccino', [['Panas', 28000], ['Dingin', 30000]]],
+                ['Cafe Latte', [['Panas', 28000], ['Dingin', 30000]]],
+                ['Kopi Tubruk', [['Reguler', 15000]]],
             ]],
             ['Non Kopi', 'kitchen' => 'bar', 'items' => [
-                ['Matcha Latte', [['Reguler', 30000]]],
-                ['Coklat Panas', [['Reguler', 27000]]],
+                ['Matcha Latte', [['Panas', 30000], ['Dingin', 32000]]],
+                ['Coklat', [['Panas', 27000], ['Dingin', 29000]]],
+                ['Red Velvet Latte', [['Dingin', 30000]]],
+                ['Susu Segar', [['Reguler', 20000]]],
+            ]],
+            ['Teh', 'kitchen' => 'bar', 'items' => [
+                ['Es Teh Manis', [['Reguler', 10000], ['Jumbo', 15000]]],
+                ['Teh Tawar', [['Panas', 8000], ['Dingin', 9000]]],
+                ['Lemon Tea', [['Panas', 18000], ['Dingin', 20000]]],
+                ['Teh Tarik', [['Panas', 20000], ['Dingin', 22000]]],
+            ]],
+            ['Minuman Lain', 'kitchen' => 'bar', 'items' => [
+                ['Air Mineral', [['600 ml', 6000]]],
+                ['Jus Jeruk', [['Reguler', 22000]]],
+                ['Jus Alpukat', [['Reguler', 25000]]],
+                ['Soda Gembira', [['Reguler', 23000]]],
             ]],
             ['Makanan', 'kitchen' => 'kitchen', 'items' => [
+                ['Indomie Goreng', [['Polos', 15000], ['Telur', 20000], ['Telur Kornet', 27000]]],
+                ['Indomie Kuah', [['Polos', 15000], ['Telur', 20000]]],
                 ['Nasi Goreng Kampung', [['Reguler', 38000]]],
+                ['Nasi Ayam Katsu', [['Reguler', 42000]]],
+                ['Mie Ayam', [['Reguler', 32000]]],
+            ]],
+            ['Camilan', 'kitchen' => 'kitchen', 'items' => [
+                ['Kentang Goreng', [['Reguler', 25000]]],
+                ['Pisang Goreng Keju', [['Reguler', 26000]]],
                 ['Roti Bakar Coklat', [['Reguler', 24000]]],
+                ['Singkong Keju', [['Reguler', 22000]]],
             ]],
         ];
 

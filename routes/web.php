@@ -37,6 +37,13 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
 
     // Internal reference page for the design system.
     Route::view('design-system', 'pages.design-system')->name('design-system');
+
+    // Editing the menu is a management job, not a cashier one.
+    Route::middleware('role:owner,manager')->group(function () {
+        Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');
+        Route::livewire('catalog/create', 'pages::catalog.edit')->name('catalog.create');
+        Route::livewire('catalog/{product}/edit', 'pages::catalog.edit')->name('catalog.edit');
+    });
 });
 
 require __DIR__.'/settings.php';

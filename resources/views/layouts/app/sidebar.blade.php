@@ -15,6 +15,12 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+
+                    @if (app(\App\Domain\Identity\CurrentOutlet::class)->roleFor(auth()->user())?->managesOutlet())
+                        <flux:sidebar.item icon="squares-2x2" :href="route('catalog.index')" :current="request()->routeIs('catalog.*')" wire:navigate>
+                            {{ __('catalog.title') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
