@@ -71,4 +71,3 @@ new #[Layout('layouts::auth')] #[Title('Pilih outlet')] class extends Component 
         </flux:button>
     </form>
 </div>
-</x-layouts::auth>

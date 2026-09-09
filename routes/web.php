@@ -2,9 +2,17 @@
 
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\ScreenLock;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+
+// Shared devices: language follows the session, not the account.
+Route::post('locale/{locale}', function (string $locale) {
+    session()->put('locale', $locale);
+
+    return back();
+})->whereIn('locale', SetLocale::SUPPORTED)->name('locale.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('outlet', 'pages::outlet.select')->name('outlet.select');

@@ -29,6 +29,8 @@
                 </form>
             </flux:sidebar.nav>
 
+            <x-language-switcher class="mx-2 mb-1" />
+
             <x-outlet-badge class="mx-2 mb-2" />
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />

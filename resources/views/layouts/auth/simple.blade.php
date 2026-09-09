@@ -15,6 +15,8 @@
                 <div class="flex flex-col gap-6">
                     {{ $slot }}
                 </div>
+
+                <x-language-switcher class="mt-2 justify-center!" />
             </div>
         </div>
 
