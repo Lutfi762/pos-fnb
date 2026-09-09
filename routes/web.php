@@ -38,6 +38,9 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
     // Internal reference page for the design system.
     Route::view('design-system', 'pages.design-system')->name('design-system');
 
+    // The till itself. Every role that can log in can ring up a sale.
+    Route::livewire('pos', 'pages::pos.index')->name('pos.index');
+
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');

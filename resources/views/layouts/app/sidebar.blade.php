@@ -16,6 +16,10 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="calculator" :href="route('pos.index')" :current="request()->routeIs('pos.*')" wire:navigate>
+                        {{ __('pos.title') }}
+                    </flux:sidebar.item>
+
                     @if (app(\App\Domain\Identity\CurrentOutlet::class)->roleFor(auth()->user())?->managesOutlet())
                         <flux:sidebar.item icon="squares-2x2" :href="route('catalog.index')" :current="request()->routeIs('catalog.*')" wire:navigate>
                             {{ __('catalog.title') }}

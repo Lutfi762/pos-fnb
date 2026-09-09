@@ -6,6 +6,8 @@
 @import '@fontsource-variable/plus-jakarta-sans/index.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
 
+@import './pos.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

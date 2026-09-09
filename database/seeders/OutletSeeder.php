@@ -30,13 +30,16 @@ class OutletSeeder extends Seeder
                 ],
             );
 
-            // Eight indoor tables and four outdoor ones per outlet.
+            // Eight indoor tables and four outdoor ones per outlet, laid out
+            // four to a row so the floor plan has a shape to draw.
             foreach (range(1, 12) as $number) {
                 DiningTable::updateOrCreate(
                     ['outlet_id' => $outlet->id, 'name' => 'M'.$number],
                     [
                         'area' => $number > 8 ? 'Outdoor' : 'Indoor',
                         'seats' => $number % 3 === 0 ? 4 : 2,
+                        'pos_x' => ($number - 1) % 4,
+                        'pos_y' => intdiv($number - 1, 4),
                         'is_active' => true,
                     ],
                 );

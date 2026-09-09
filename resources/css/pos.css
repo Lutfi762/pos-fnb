@@ -1,0 +1,642 @@
+/*
+| The cashier screen. One layout that grows from a phone held in one hand to
+| a laptop on a counter, without a single horizontal scrollbar on the way.
+|
+| Phone   : menu fills the screen, cart is a sheet pulled up from the bottom.
+| Tablet  : two columns, cart pinned to the right at 38%.
+| Laptop  : three columns, categories become a rail of their own.
+*/
+
+.pos-shell {
+    display: grid;
+    grid-template-areas: 'categories' 'menu';
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    min-height: calc(100dvh - 8rem);
+    /* Room for the cart bar so the last menu row is never hidden under it. */
+    padding-bottom: 5.5rem;
+}
+
+@media (min-width: 48rem) {
+    .pos-shell {
+        grid-template-areas: 'categories cart' 'menu cart';
+        grid-template-columns: minmax(0, 1fr) 38%;
+        gap: 1rem;
+        padding-bottom: 0;
+    }
+}
+
+@media (min-width: 80rem) {
+    .pos-shell {
+        grid-template-areas: 'categories menu cart';
+        grid-template-columns: 12rem minmax(0, 1fr) 22rem;
+        grid-template-rows: minmax(0, 1fr);
+    }
+}
+
+/* Categories ------------------------------------------------------------ */
+
+.pos-categories {
+    grid-area: categories;
+    min-width: 0;
+}
+
+.pos-category-list {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+}
+
+.pos-category-list::-webkit-scrollbar {
+    display: none;
+}
+
+@media (min-width: 80rem) {
+    .pos-category-list {
+        flex-direction: column;
+        overflow-x: visible;
+        overflow-y: auto;
+    }
+}
+
+.pos-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+    scroll-snap-align: start;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background-color: var(--surface);
+    padding: 0.5rem 0.875rem;
+    /* 44px minimum: this is tapped with a thumb, in a hurry. */
+    min-height: 2.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
+}
+
+@media (min-width: 80rem) {
+    .pos-chip {
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
+.pos-chip:hover {
+    border-color: var(--border-strong);
+}
+
+.pos-chip-on {
+    border-color: var(--brand);
+    background-color: var(--state-done-surface);
+    color: var(--state-done-text);
+}
+
+.pos-kbd {
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    padding: 0 0.3rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+/* Menu ------------------------------------------------------------------ */
+
+.pos-menu {
+    grid-area: menu;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    min-height: 0;
+}
+
+.pos-grid {
+    display: grid;
+    /* auto-fill keeps the cards honest at every width, no breakpoint list. */
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: 0.625rem;
+    overflow-y: auto;
+    align-content: start;
+    min-height: 0;
+}
+
+.pos-grid-empty {
+    grid-column: 1 / -1;
+}
+
+.pos-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background-color: var(--surface);
+    padding: 0.75rem;
+    min-height: 5.5rem;
+    text-align: left;
+    transition: transform var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
+}
+
+.pos-card:hover {
+    border-color: var(--brand-accent);
+}
+
+/* The press is the receipt: the card dips before the number moves. */
+.pos-card:active {
+    transform: scale(0.97);
+}
+
+.pos-card-name {
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.pos-card-price {
+    color: var(--text-muted);
+    text-align: left;
+}
+
+/* Cart ------------------------------------------------------------------ */
+
+.pos-cart {
+    grid-area: cart;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* On a phone the cart lives at the bottom edge, collapsed to its bar. */
+@media (max-width: 47.99rem) {
+    .pos-cart {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 30;
+        max-height: 88dvh;
+        border-radius: 1.25rem 1.25rem 0 0;
+        border-top: 1px solid var(--border);
+        background-color: var(--surface);
+        box-shadow: 0 -12px 32px rgb(0 0 0 / 0.12);
+        transition: transform var(--dur-slow) var(--ease-out);
+    }
+
+    .pos-cart-body {
+        display: none;
+    }
+
+    .pos-cart-open .pos-cart-body {
+        display: flex;
+        animation: meja-rise var(--dur-slow) var(--ease-out) both;
+    }
+}
+
+.pos-cart-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    min-height: 3.5rem;
+    width: 100%;
+    font-weight: 600;
+}
+
+/* The bar is a handle on a phone and a heading everywhere else. */
+@media (min-width: 48rem) {
+    .pos-cart-bar {
+        pointer-events: none;
+        border-bottom: 1px solid var(--border);
+    }
+}
+
+.pos-cart-handle {
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background-color: var(--border-strong);
+}
+
+@media (min-width: 48rem) {
+    .pos-cart-handle {
+        display: none;
+    }
+}
+
+.pos-cart-bar-count {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.pos-cart-bar-total {
+    margin-left: auto;
+    font-size: 1.125rem;
+}
+
+.pos-cart-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+@media (min-width: 48rem) {
+    .pos-cart-body {
+        border: 1px solid var(--border);
+        border-top: 0;
+        border-radius: 0 0 1rem 1rem;
+        background-color: var(--surface);
+        padding-top: 0.75rem;
+    }
+
+    .pos-cart-bar {
+        border: 1px solid var(--border);
+        border-bottom: 0;
+        border-radius: 1rem 1rem 0 0;
+        background-color: var(--surface);
+    }
+}
+
+.pos-types {
+    width: 100%;
+}
+
+.pos-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+}
+
+.pos-line {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.pos-line:last-child {
+    border-bottom: 0;
+}
+
+/* A new line slides in so the eye follows what the hand just added. */
+@media (prefers-reduced-motion: no-preference) {
+    .motion-line {
+        animation: meja-rise var(--dur-base) var(--ease-out) both;
+    }
+}
+
+.pos-line-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.pos-line-name {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.pos-line-variant,
+.pos-line-modifier,
+.pos-line-note {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-weight: 400;
+}
+
+.pos-line-note {
+    font-style: italic;
+}
+
+.pos-line-discount {
+    color: var(--state-done);
+    font-size: 0.8125rem;
+}
+
+.pos-line-total {
+    margin-left: auto;
+    flex: none;
+}
+
+.pos-line-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+}
+
+.pos-line-qty {
+    min-width: 2rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.pos-cart-empty {
+    padding-block: 2rem;
+}
+
+/* Summary --------------------------------------------------------------- */
+
+.pos-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+}
+
+.pos-summary-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--text-muted);
+}
+
+.pos-summary-discount {
+    color: var(--state-done);
+}
+
+.pos-summary-grand {
+    border-top: 1px solid var(--border);
+    margin-top: 0.375rem;
+    padding-top: 0.5rem;
+    color: var(--text);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.pos-bill-discount summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    padding-block: 0.375rem;
+}
+
+.pos-bill-discount-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding-block: 0.5rem;
+}
+
+.pos-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    background-color: var(--surface);
+    padding-top: 0.5rem;
+}
+
+/* Thumb-sized: these two are pressed hundreds of times a shift. */
+.pos-action {
+    min-height: 3rem;
+    font-size: 1rem;
+}
+
+/* Floor plan ------------------------------------------------------------ */
+
+.pos-plan {
+    display: grid;
+    grid-auto-rows: minmax(4.5rem, auto);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding-block: 0.75rem;
+}
+
+.pos-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background-color: var(--surface-sunken);
+    min-height: 4.5rem;
+    padding: 0.5rem;
+    transition: transform var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
+}
+
+.pos-table:active {
+    transform: scale(0.97);
+}
+
+.pos-table-open {
+    border-color: var(--state-pending);
+    background-color: var(--state-pending-surface);
+    color: var(--state-pending-text);
+}
+
+.pos-table-picked {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+.pos-table-name {
+    font-weight: 700;
+}
+
+.pos-table-seats,
+.pos-table-total {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.pos-plan-legend {
+    display: flex;
+    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+}
+
+.pos-plan-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.pos-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-sunken);
+}
+
+.pos-dot-open {
+    border-color: var(--state-pending);
+    background-color: var(--state-pending);
+}
+
+.pos-bills {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 14rem;
+    overflow-y: auto;
+}
+
+.pos-bill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.pos-bill-number {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+}
+
+.pos-bill-table {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.pos-bill > :nth-child(2) {
+    margin-left: auto;
+}
+
+/* Modifier sheet -------------------------------------------------------- */
+
+.pos-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-color: var(--overlay);
+}
+
+@media (min-width: 48rem) {
+    .pos-sheet-backdrop {
+        align-items: center;
+    }
+}
+
+.pos-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    max-height: 90dvh;
+    overflow-y: auto;
+    border-radius: 1.25rem 1.25rem 0 0;
+    background-color: var(--surface);
+    padding: 1.25rem 1rem 1rem;
+    /* The sheet rises from under the thumb rather than appearing on top. */
+    animation: meja-sheet-up var(--dur-slow) var(--ease-out) both;
+}
+
+@media (min-width: 48rem) {
+    .pos-sheet {
+        border-radius: 1.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes meja-sheet-up {
+        from {
+            transform: translateY(6%);
+            opacity: 0;
+        }
+        to {
+            transform: none;
+            opacity: 1;
+        }
+    }
+}
+
+.pos-sheet-handle {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background-color: var(--border-strong);
+}
+
+.pos-choice-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pos-choice-legend {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    font-weight: 600;
+}
+
+.pos-choice-rule {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.pos-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.5rem;
+}
+
+.pos-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background-color: var(--surface);
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    transition: border-color var(--dur-fast) var(--ease-out),
+        background-color var(--dur-fast) var(--ease-out);
+}
+
+.pos-choice-on {
+    border-color: var(--brand);
+    background-color: var(--state-done-surface);
+    color: var(--state-done-text);
+    font-weight: 600;
+}
+
+.pos-sheet-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    background-color: var(--surface);
+    padding-top: 0.5rem;
+}

@@ -10,6 +10,9 @@ use App\Models\DomainModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property OrderItemStatus $status
+ */
 class OrderItem extends DomainModel
 {
     protected function casts(): array

@@ -53,6 +53,9 @@ class SaveProduct
                 ->whereNotIn('id', $kept)
                 ->each(fn (ProductVariant $variant) => $variant->delete());
 
+            // The POS reads a cached menu; a stale price is a wrong charge.
+            MenuCatalog::flush();
+
             return $product->load('variants');
         });
     }

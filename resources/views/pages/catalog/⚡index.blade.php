@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Catalog\MenuCatalog;
 use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Identity\CurrentOutlet;
@@ -72,6 +73,7 @@ new #[Layout('layouts::app')] #[Title('Katalog')] class extends Component {
     {
         Product::query()->findOrFail($productId)->delete();
 
+        MenuCatalog::flush();
         unset($this->products);
 
         Flux::toast(variant: 'success', text: __('catalog.archived_notice'));
@@ -81,6 +83,7 @@ new #[Layout('layouts::app')] #[Title('Katalog')] class extends Component {
     {
         Product::withTrashed()->findOrFail($productId)->restore();
 
+        MenuCatalog::flush();
         unset($this->products);
 
         Flux::toast(variant: 'success', text: __('catalog.restored'));

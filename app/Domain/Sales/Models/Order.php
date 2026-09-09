@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property OrderStatus $status
+ * @property OrderType $type
+ */
 class Order extends DomainModel
 {
     /** @use HasFactory<OrderFactory> */
