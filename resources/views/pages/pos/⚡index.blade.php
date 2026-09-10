@@ -8,9 +8,11 @@ use App\Domain\Sales\CalculateTotals;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Enums\OrderType;
+use App\Domain\Sales\Models\CashierShift;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\OrderTotals;
 use App\Domain\Sales\SaveOrder;
+use App\Domain\Sales\ShiftRegister;
 use App\Domain\Sales\TableMap;
 use App\Domain\Sales\TaxProfile;
 use App\Models\User;
@@ -555,7 +557,7 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
     /**
      * Send the bill to the kitchen and keep it open for payment later.
      */
-    public function saveBill(): void
+    public function saveBill(bool $thenPay = false): void
     {
         if ($this->cart === []) {
             return;
@@ -580,12 +582,31 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
                 'customer_name' => $this->customerName === '' ? null : $this->customerName,
                 'bill_discount_type' => DiscountType::tryFrom($this->billDiscountType),
                 'bill_discount_value' => $this->billDiscountValue,
+
+                // Ties the bill to the drawer it was rung up on, so the count
+                // at the end of the shift has something to be counted against.
+                'cashier_shift_id' => $this->shift?->getKey(),
             ],
         );
 
         $this->newOrder();
 
+        if ($thenPay) {
+            $this->redirectRoute('pos.payment', ['order' => $order], navigate: true);
+
+            return;
+        }
+
         Flux::toast(variant: 'success', text: __('pos.saved', ['number' => $order->number]));
+    }
+
+    /**
+     * The drawer this cashier has open, or null when they never opened one.
+     */
+    #[Computed]
+    public function shift(): ?CashierShift
+    {
+        return app(ShiftRegister::class)->current($this->outlet, auth()->user());
     }
 
     public function newOrder(): void
@@ -730,7 +751,7 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
 
             if (event.key === 'F2') {
                 event.preventDefault();
-                this.$wire.saveBill();
+                this.$wire.saveBill(true);
                 return;
             }
 

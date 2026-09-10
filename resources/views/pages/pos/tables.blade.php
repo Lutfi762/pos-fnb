@@ -57,6 +57,16 @@
                         {{ __('pos.resume') }}
                     </flux:button>
 
+                    <flux:button
+                        size="sm"
+                        variant="primary"
+                        :href="route('pos.payment', ['order' => $bill])"
+                        wire:navigate
+                        data-test="pay-bill"
+                    >
+                        {{ __('payments.pay') }}
+                    </flux:button>
+
                     <flux:dropdown>
                         <flux:button size="sm" variant="subtle" icon="ellipsis-horizontal" :aria-label="__('pos.move_table')" />
 

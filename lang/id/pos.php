@@ -77,7 +77,6 @@ return [
     'save_bill' => 'Simpan bill',
     'saved' => 'Bill :number tersimpan dan terkirim ke dapur.',
     'pay' => 'Bayar',
-    'pay_soon' => 'Pembayaran belum aktif di langkah ini.',
     'order_closed' => 'Bill ini sudah ditutup dan tidak bisa diubah.',
     'open_bills' => 'Bill berjalan',
     'new_order' => 'Pesanan baru',

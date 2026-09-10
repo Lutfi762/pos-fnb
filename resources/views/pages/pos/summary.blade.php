@@ -100,7 +100,7 @@
     <flux:button
         variant="primary"
         class="pos-action"
-        wire:click="saveBill"
+        wire:click="saveBill(true)"
         :disabled="$cart === []"
         data-test="pay"
     >

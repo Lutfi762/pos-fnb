@@ -1,0 +1,325 @@
+/*
+    Payment, shift, and receipt screens.
+
+    The payment screen is two panes: what is owed on the left, how it is being
+    paid on the right. On a phone they stack, with the amount owed on top so it
+    stays in view while the keypad is up.
+*/
+
+.pay-shell {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+}
+
+@media (min-width: 48rem) {
+    .pay-shell {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+        align-items: start;
+    }
+}
+
+/* What is owed ---------------------------------------------------------- */
+
+.pay-due {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface);
+}
+
+.pay-due-label {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+}
+
+/* The one number the guest and the cashier both look at. */
+.pay-due-amount {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.pay-paid {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+}
+
+.pay-lines {
+    display: grid;
+    gap: 0.25rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.9375rem;
+}
+
+.pay-lines li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Tendering ------------------------------------------------------------- */
+
+.pay-form {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+}
+
+.pay-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: 0.5rem;
+}
+
+.pay-method {
+    min-height: 2.75rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9375rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.pay-method:hover {
+    border-color: var(--border-strong);
+}
+
+.pay-method-on {
+    border-color: var(--brand);
+    background: var(--state-done-surface);
+    color: var(--state-done-text);
+    font-weight: 600;
+}
+
+/* The amount box is the biggest input on the screen for a reason. */
+.pay-amount input {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.pay-quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pay-change {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.625rem;
+    background: var(--state-done-surface);
+    color: var(--state-done-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.pay-actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* Shift ----------------------------------------------------------------- */
+
+.shift-shell {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    max-width: 34rem;
+}
+
+.shift-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface);
+}
+
+.shift-summary {
+    display: grid;
+    gap: 0.375rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: var(--surface-sunken);
+    font-size: 0.9375rem;
+}
+
+.shift-summary > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.shift-summary dt {
+    color: var(--text-muted);
+}
+
+/* What the drawer should hold: the line the count is measured against. */
+.shift-expected {
+    margin-top: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-strong);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.shift-difference {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.625rem;
+    background: var(--state-done-surface);
+    color: var(--state-done-text);
+    font-weight: 600;
+}
+
+/* Any variance at all, over or short, is worth a second look. */
+.shift-difference-off {
+    background: var(--state-pending-surface);
+    color: var(--state-pending-text);
+}
+
+/* Receipt --------------------------------------------------------------- */
+
+.receipt-shell {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+}
+
+/*
+    58mm of thermal paper is 48mm of printable width. The screen copy keeps
+    the same measure so what the cashier checks is what comes out of the roll.
+*/
+.receipt {
+    width: 100%;
+    max-width: 20rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.receipt-head {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.receipt-title {
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.receipt-meta,
+.receipt-totals {
+    display: grid;
+    gap: 0.125rem;
+}
+
+.receipt-meta > div,
+.receipt-totals > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.receipt-lines {
+    display: grid;
+    gap: 0.375rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem 0;
+    border-top: 1px dashed var(--border-strong);
+    border-bottom: 1px dashed var(--border-strong);
+}
+
+.receipt-line-name {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.receipt-line-sub {
+    padding-left: 1rem;
+    color: var(--text-muted);
+}
+
+.receipt-grand {
+    margin: 0.375rem 0;
+    padding: 0.375rem 0;
+    border-top: 1px dashed var(--border-strong);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.receipt-note,
+.receipt-foot {
+    margin-top: 0.75rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.receipt-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/*
+    Printing: the paper is all that survives. Everything else on the page,
+    including the app chrome, is dropped, and the receipt goes full width in
+    plain black on white so a thermal head has something to burn.
+*/
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .receipt,
+    .receipt * {
+        visibility: visible;
+    }
+
+    .receipt {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        max-width: none;
+        padding: 0;
+        border: 0;
+        background: #fff;
+        color: #000;
+    }
+
+    .receipt-actions {
+        display: none;
+    }
+
+    @page {
+        margin: 4mm;
+    }
+}

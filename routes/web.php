@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
 
     // The till itself. Every role that can log in can ring up a sale.
     Route::livewire('pos', 'pages::pos.index')->name('pos.index');
+    Route::livewire('pos/shift', 'pages::pos.shift')->name('pos.shift');
+    Route::livewire('pos/{order}/pay', 'pages::pos.payment')->name('pos.payment');
+    Route::livewire('pos/{order}/receipt', 'pages::pos.receipt')->name('pos.receipt');
 
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
