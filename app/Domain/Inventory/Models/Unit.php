@@ -22,4 +22,9 @@ class Unit extends DomainModel
     {
         return $this->hasMany(InventoryItem::class);
     }
+
+    protected static function newFactory(): UnitFactory
+    {
+        return UnitFactory::new();
+    }
 }

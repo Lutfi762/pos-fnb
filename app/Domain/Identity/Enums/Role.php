@@ -32,4 +32,12 @@ enum Role: string
     {
         return $this === self::Owner || $this === self::Manager;
     }
+
+    /**
+     * Roles allowed into the stockroom: counts, deliveries, and purchases.
+     */
+    public function managesStock(): bool
+    {
+        return $this->managesOutlet() || $this === self::Warehouse;
+    }
 }

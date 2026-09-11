@@ -44,6 +44,15 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
     Route::livewire('pos/{order}/pay', 'pages::pos.payment')->name('pos.payment');
     Route::livewire('pos/{order}/receipt', 'pages::pos.receipt')->name('pos.receipt');
 
+    // The stockroom. Warehouse staff live here; managers pass through.
+    Route::middleware('role:owner,manager,warehouse')->group(function () {
+        Route::livewire('stock', 'pages::stock.index')->name('stock.index');
+        Route::livewire('purchases', 'pages::purchases.index')->name('purchases.index');
+        Route::livewire('purchases/create', 'pages::purchases.edit')->name('purchases.create');
+        Route::livewire('purchases/{purchaseOrder}', 'pages::purchases.show')->name('purchases.show');
+        Route::livewire('purchases/{purchaseOrder}/edit', 'pages::purchases.edit')->name('purchases.edit');
+    });
+
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');

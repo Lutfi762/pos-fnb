@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Purchasing\Models;
 
 use App\Models\DomainModel;
+use Database\Factories\SupplierFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends DomainModel
 {
-    use SoftDeletes;
+    /** @use HasFactory<SupplierFactory> */
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {
@@ -26,5 +29,10 @@ class Supplier extends DomainModel
     public function purchaseOrders(): HasMany
     {
         return $this->hasMany(PurchaseOrder::class);
+    }
+
+    protected static function newFactory(): SupplierFactory
+    {
+        return SupplierFactory::new();
     }
 }

@@ -11,6 +11,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property PurchaseOrderStatus $status
+ */
 class PurchaseOrder extends DomainModel
 {
     protected function casts(): array
@@ -56,5 +59,14 @@ class PurchaseOrder extends DomainModel
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    /**
+     * Whether any part of this order has already been delivered, which is what
+     * stops it being cancelled: the stock is on the shelf either way.
+     */
+    public function hasReceipts(): bool
+    {
+        return $this->items()->where('quantity_received', '>', 0)->exists();
     }
 }

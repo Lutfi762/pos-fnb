@@ -24,9 +24,21 @@
                         {{ __('shifts.title') }}
                     </flux:sidebar.item>
 
-                    @if (app(\App\Domain\Identity\CurrentOutlet::class)->roleFor(auth()->user())?->managesOutlet())
+                    @php($role = app(\App\Domain\Identity\CurrentOutlet::class)->roleFor(auth()->user()))
+
+                    @if ($role?->managesOutlet())
                         <flux:sidebar.item icon="squares-2x2" :href="route('catalog.index')" :current="request()->routeIs('catalog.*')" wire:navigate>
                             {{ __('catalog.title') }}
+                        </flux:sidebar.item>
+                    @endif
+
+                    @if ($role?->managesStock())
+                        <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.*')" wire:navigate>
+                            {{ __('inventory.title') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="truck" :href="route('purchases.index')" :current="request()->routeIs('purchases.*')" wire:navigate>
+                            {{ __('purchasing.title') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
