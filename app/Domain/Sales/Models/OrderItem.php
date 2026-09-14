@@ -7,6 +7,8 @@ namespace App\Domain\Sales\Models;
 use App\Domain\Catalog\Models\ProductVariant;
 use App\Domain\Sales\Enums\OrderItemStatus;
 use App\Models\DomainModel;
+use Database\Factories\OrderItemFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderItem extends DomainModel
 {
+    /** @use HasFactory<OrderItemFactory> */
+    use HasFactory;
+
     protected function casts(): array
     {
         return [
@@ -24,6 +29,10 @@ class OrderItem extends DomainModel
             'modifier_total' => 'integer',
             'discount_total' => 'integer',
             'line_total' => 'integer',
+            'prep_minutes' => 'integer',
+            'sent_at' => 'datetime',
+            'started_at' => 'datetime',
+            'ready_at' => 'datetime',
             'voided_at' => 'datetime',
         ];
     }
@@ -52,5 +61,10 @@ class OrderItem extends DomainModel
     public function modifiers(): HasMany
     {
         return $this->hasMany(OrderItemModifier::class);
+    }
+
+    protected static function newFactory(): OrderItemFactory
+    {
+        return OrderItemFactory::new();
     }
 }

@@ -4,6 +4,8 @@ use App\Domain\Catalog\MenuCatalog;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\Models\Outlet;
+use App\Domain\Kitchen\AdvanceTicket;
+use App\Domain\Kitchen\StationRouter;
 use App\Domain\Sales\CalculateTotals;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\OrderStatus;
@@ -331,7 +333,8 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             'product_variant_id' => $variant->getKey(),
             'product_name' => $product->name,
             'variant_name' => $variant->name,
-            'station' => $product->station,
+            'station' => app(StationRouter::class)->stationFor($product)->value,
+            'prep_minutes' => app(StationRouter::class)->prepMinutesFor($product),
             'quantity' => $replacing !== null ? $this->cart[$replacing]['quantity'] : 1,
             'unit_price' => $variant->priceFor($this->outlet),
             'modifier_total' => array_sum(array_column($modifiers, 'price')),
@@ -536,6 +539,7 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             'product_name' => $item->product_name,
             'variant_name' => $item->variant_name,
             'station' => $item->station,
+            'prep_minutes' => $item->prep_minutes,
             'quantity' => (int) $item->quantity,
             'unit_price' => $item->unit_price,
             'modifier_total' => (int) $item->quantity === 0
@@ -589,10 +593,21 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             ],
         );
 
+        // Fire the new lines at their stations. Lines already on the board
+        // keep the clock they were sent with.
+        $sent = app(AdvanceTicket::class)->send($order);
+
         $this->newOrder();
 
         if ($thenPay) {
             $this->redirectRoute('pos.payment', ['order' => $order], navigate: true);
+
+            return;
+        }
+
+        // No screen in the kitchen: the docket is the ticket, so it prints.
+        if ($sent > 0 && ! $this->outlet->has_kitchen_display) {
+            $this->redirectRoute('kitchen.docket', ['order' => $order], navigate: true);
 
             return;
         }

@@ -24,6 +24,10 @@
                         {{ __('shifts.title') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="fire" :href="route('kitchen.index')" :current="request()->routeIs('kitchen.*')" wire:navigate>
+                        {{ __('kitchen.title') }}
+                    </flux:sidebar.item>
+
                     @php($role = app(\App\Domain\Identity\CurrentOutlet::class)->roleFor(auth()->user()))
 
                     @if ($role?->managesOutlet())

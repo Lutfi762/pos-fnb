@@ -19,6 +19,7 @@ class Category extends DomainModel
     {
         return [
             'sort_order' => 'integer',
+            'prep_minutes' => 'integer',
             'is_active' => 'boolean',
         ];
     }

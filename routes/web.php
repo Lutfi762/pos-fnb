@@ -32,6 +32,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->middleware('outlet')->name('lock.store');
 });
 
+/*
+| The kitchen display. Deliberately outside the screen lock: the pass is a
+| wall-mounted screen nobody stands at, and a cook with wet hands should never
+| have to type a PIN to read what to cook. Auth and outlet still apply.
+*/
+Route::middleware(['auth', 'verified', 'outlet'])->group(function () {
+    Route::livewire('kitchen', 'pages::kitchen.index')->name('kitchen.index');
+    Route::livewire('kitchen/{order}/docket', 'pages::kitchen.docket')->name('kitchen.docket');
+});
+
 Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 

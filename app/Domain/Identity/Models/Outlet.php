@@ -23,6 +23,7 @@ class Outlet extends DomainModel
             'service_charge_percent' => 'decimal:2',
             'price_includes_tax' => 'boolean',
             'cash_rounding' => 'integer',
+            'has_kitchen_display' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

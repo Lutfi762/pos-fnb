@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales;
 
 use App\Domain\Identity\Models\Outlet;
+use App\Domain\Kitchen\StationRouter;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\OrderItemStatus;
 use App\Domain\Sales\Enums\OrderStatus;
@@ -112,6 +113,11 @@ class SaveOrder
                 'product_name' => $line['product_name'],
                 'variant_name' => $line['variant_name'] ?? null,
                 'station' => $line['station'] ?? null,
+
+                // Snapshot, like the name and the price: the ticket keeps the
+                // target it was fired with even if the category is retimed.
+                'prep_minutes' => (int) ($line['prep_minutes'] ?? StationRouter::DEFAULT_PREP_MINUTES),
+
                 'quantity' => $cart->quantity,
                 'unit_price' => $cart->unitPrice,
 

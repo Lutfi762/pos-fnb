@@ -1,0 +1,331 @@
+/*
+| The kitchen display. Read from two metres away by someone holding a pan, so
+| every rule here trades density for legibility: nothing under 1rem, nothing
+| under a 44px target, and no colour that carries meaning on its own.
+*/
+
+.kds-body {
+    background-color: var(--base);
+    color: var(--text);
+    /* The board owns the viewport; the page itself never scrolls. */
+    overflow: hidden;
+}
+
+.kds {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    height: 100dvh;
+    padding: 0.75rem;
+}
+
+/* Bar ------------------------------------------------------------------- */
+
+.kds-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.kds-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.kds-outlet {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.kds-spacer {
+    flex: 1;
+}
+
+.kds-stations {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.kds-station {
+    min-height: 3rem;
+    padding-inline: 1.25rem;
+    border: 2px solid var(--border-strong);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.kds-station[aria-pressed='true'] {
+    border-color: var(--brand-accent);
+    background: var(--brand);
+    color: var(--brand-contrast);
+}
+
+.kds-offline {
+    flex-basis: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--state-danger-surface);
+    color: var(--state-danger-text);
+    font-weight: 600;
+}
+
+/* Columns --------------------------------------------------------------- */
+
+.kds-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+/* One column at a time on a phone, for the manager checking from the floor. */
+@media (max-width: 48rem) {
+    .kds-columns {
+        grid-template-columns: minmax(0, 1fr);
+        overflow-y: auto;
+    }
+}
+
+.kds-column {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    min-height: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--surface-sunken);
+}
+
+.kds-column-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kds-count {
+    min-width: 2rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--border-strong);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.kds-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 0.125rem;
+    list-style: none;
+}
+
+.kds-empty {
+    padding: 1.5rem 0.5rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Tickets --------------------------------------------------------------- */
+
+.kds-ticket {
+    position: relative;
+    border: 2px solid var(--border-strong);
+    border-radius: 0.875rem;
+    background: var(--surface);
+    /* The urgency edge. Colour alone never carries it: the clock says the
+       same thing in numbers, and goes negative when a ticket is late. */
+    border-left-width: 0.5rem;
+}
+
+.kds-ticket[data-urgency='close'] {
+    border-left-color: var(--state-pending);
+}
+
+.kds-ticket[data-urgency='late'] {
+    border-left-color: var(--state-danger);
+}
+
+.kds-ticket-face {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+    /* Whole card is the target: aimed at with a knuckle, not a fingertip. */
+    min-height: 5.5rem;
+    padding: 0.75rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.kds-ticket-face:disabled {
+    cursor: default;
+}
+
+.kds-ticket-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.kds-number {
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.kds-where {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.kds-clock {
+    margin-inline-start: auto;
+    font-family: var(--font-mono);
+    font-size: 1.375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+[data-urgency='close'] .kds-clock {
+    color: var(--state-pending);
+}
+
+[data-urgency='late'] .kds-clock {
+    color: var(--state-danger);
+}
+
+.kds-lines {
+    display: grid;
+    gap: 0.375rem;
+}
+
+.kds-line {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.25rem 0.5rem;
+    font-size: 1.125rem;
+    line-height: 1.35;
+}
+
+.kds-qty {
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.kds-name {
+    font-weight: 600;
+}
+
+.kds-mod,
+.kds-note {
+    grid-column: 2;
+    font-size: 1rem;
+}
+
+.kds-mod {
+    color: var(--text-muted);
+}
+
+/* A note is someone's allergy until proven otherwise: never muted. */
+.kds-note {
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+    background: var(--state-pending-surface);
+    color: var(--state-pending-text);
+    font-weight: 600;
+}
+
+.kds-action {
+    padding-top: 0.25rem;
+    color: var(--brand-accent);
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kds-undo {
+    position: absolute;
+    /* Out of the way of the tap meant for the card, but still 44px wide. */
+    inset-block-end: 0.25rem;
+    inset-inline-end: 0.25rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    cursor: pointer;
+}
+
+.kds-station-tag {
+    position: absolute;
+    inset-block-start: 0.5rem;
+    inset-inline-end: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/*
+| The one animation in the app that repeats. A late ticket has to be findable
+| across a room without reading anything, so its edge breathes until it is
+| picked up. Stops dead for anyone who asked for less motion.
+*/
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes kds-edge {
+        0%, 100% {
+            border-left-color: var(--state-danger);
+        }
+        50% {
+            border-left-color: var(--state-pending);
+        }
+    }
+
+    .kds-ticket[data-urgency='late'] {
+        animation: kds-edge 1.6s var(--ease-out) infinite;
+    }
+}
+
+/* Docket ---------------------------------------------------------------- */
+
+.docket-number {
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.docket-where,
+.docket-line {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.docket-qty {
+    font-family: var(--font-mono);
+}
+
+.docket-note {
+    font-weight: 700;
+    text-transform: uppercase;
+}
