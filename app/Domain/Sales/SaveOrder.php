@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales;
 
 use App\Domain\Identity\Models\Outlet;
+use App\Domain\Inventory\RecipeCost;
 use App\Domain\Kitchen\StationRouter;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\OrderItemStatus;
@@ -27,6 +28,7 @@ class SaveOrder
     public function __construct(
         private readonly CalculateTotals $totals,
         private readonly OrderNumber $numbers,
+        private readonly RecipeCost $costs,
     ) {}
 
     /**
@@ -126,6 +128,14 @@ class SaveOrder
 
                 'discount_total' => $cart->discount(),
                 'line_total' => $cart->net(),
+
+                // Snapshot of what the ingredients cost today, so the margin
+                // on this bill still reads the same after the next delivery
+                // changes the average cost of coffee beans.
+                'cost_total' => $this->costs->forVariant(
+                    is_string($line['product_variant_id'] ?? null) ? $line['product_variant_id'] : null,
+                ) * $cart->quantity,
+
                 'note' => $line['note'] ?? null,
             ];
 

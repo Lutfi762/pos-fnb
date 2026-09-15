@@ -43,7 +43,9 @@ Route::middleware(['auth', 'verified', 'outlet'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    // The landing page after login is the sales report. Cashiers may open it
+    // too: the page itself hides the cost and margin figures from them.
+    Route::livewire('dashboard', 'pages::dashboard')->name('dashboard');
 
     // Internal reference page for the design system.
     Route::view('design-system', 'pages.design-system')->name('design-system');

@@ -22,6 +22,9 @@ class DatabaseSeeder extends Seeder
             PaymentMethodSeeder::class,
             CatalogSeeder::class,
             InventorySeeder::class,
+
+            // Recipes need both the menu and the ingredients to exist first.
+            RecipeSeeder::class,
         ]);
     }
 }
