@@ -12,8 +12,8 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
+                    <flux:sidebar.item icon="chart-bar" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                        {{ __('reports.title') }}
                     </flux:sidebar.item>
 
                     <flux:sidebar.item icon="calculator" :href="route('pos.index')" :current="request()->routeIs('pos.index')" wire:navigate>

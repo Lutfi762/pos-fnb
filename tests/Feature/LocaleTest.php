@@ -38,9 +38,12 @@ it('keeps the language choice on the device, not the account', function (): void
     $this->post(route('locale.store', 'en'));
     $this->actingAs($user);
 
+    // "Keluar" in Indonesian: the sidebar is proof the whole chrome switched,
+    // not only the page body.
     $this->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Dashboard');
+        ->assertSee('Log out')
+        ->assertDontSee('Keluar');
 });
 
 it('offers the switcher on the locked screen so a new shift can change it', function (): void {

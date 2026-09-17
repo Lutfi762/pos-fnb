@@ -10,7 +10,6 @@ use App\Domain\Kitchen\Events\BoardChanged;
 use App\Domain\Sales\Enums\OrderItemStatus;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\Models\OrderItem;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**

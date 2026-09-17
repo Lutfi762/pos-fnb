@@ -53,7 +53,7 @@
 
 .report-tile dt {
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 .report-tile dd {
@@ -70,7 +70,7 @@
 
 .report-tile-note {
     color: var(--text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     margin-top: 0.375rem;
 }
 
@@ -122,7 +122,8 @@
 
 .report-table {
     width: 100%;
-    font-size: 0.875rem;
+    /* 15px, the floor the project sets for anything read on a shift. */
+    font-size: 0.9375rem;
     border-collapse: collapse;
 }
 
