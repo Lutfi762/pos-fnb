@@ -24,5 +24,5 @@ it('links the manifest and worker entry point from app pages', function (): void
     expect(File::get(resource_path('js/app.js')))
         ->toContain("navigator.serviceWorker.register('/service-worker.js')")
         ->and(File::get(resource_path('js/offline-drafts.js')))
-        ->toContain("const DATABASE = 'meja-offline'", "'/sync/draft-orders'", 'previous.operation_key', 'blocked_status', 'offline-draft-blocked', 'data-offline-draft-save');
+        ->toContain("const DATABASE = 'meja-offline'", "'/sync/draft-orders'", 'previous.operation_key', 'blocked_status', 'offline-draft-blocked', 'offline-draft-sent', 'data-offline-draft-save');
 });

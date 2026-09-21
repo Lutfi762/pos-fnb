@@ -404,6 +404,16 @@
     padding-top: 0.5rem;
 }
 
+.pos-offline-status {
+    background-color: var(--state-pending-surface);
+    border: 1px solid var(--state-pending);
+    border-radius: 0.5rem;
+    color: var(--state-pending-text);
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.75rem;
+}
+
 /* Thumb-sized: these two are pressed hundreds of times a shift. */
 .pos-action {
     min-height: 3rem;

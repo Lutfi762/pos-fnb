@@ -89,6 +89,7 @@ async function send(operation) {
 
     if (response.ok) {
         await remove(operation.operation_key);
+        window.dispatchEvent(new CustomEvent('offline-draft-sent'));
 
         return 'sent';
     }

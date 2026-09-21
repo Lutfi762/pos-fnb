@@ -86,6 +86,21 @@
 </details>
 
 {{-- Thumb zone: the two buttons a cashier actually presses. --}}
+<div
+    wire:ignore
+    x-data="{ status: '' }"
+    x-on:offline-draft-queued.window="status = @js(__('pos.offline_queued'))"
+    x-on:offline-draft-sent.window="status = @js(__('pos.offline_sent'))"
+    x-on:offline-draft-blocked.window="status = $event.detail.status === 409 ? @js(__('pos.offline_conflict')) : @js(__('pos.offline_invalid'))"
+    x-show="status"
+    x-text="status"
+    x-cloak
+    class="pos-offline-status"
+    role="status"
+    aria-live="polite"
+    data-test="offline-draft-status"
+></div>
+
 <div class="pos-actions">
     <flux:button
         variant="subtle"
