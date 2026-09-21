@@ -90,7 +90,7 @@
     wire:ignore
     x-data="{ status: '' }"
     x-on:offline-draft-queued.window="status = @js(__('pos.offline_queued'))"
-    x-on:offline-draft-sent.window="status = @js(__('pos.offline_sent'))"
+    x-on:offline-draft-sent.window="status = @js(__('pos.offline_sent')); setTimeout(() => window.location.reload(), 1000)"
     x-on:offline-draft-blocked.window="status = $event.detail.status === 409 ? @js(__('pos.offline_conflict')) : @js(__('pos.offline_invalid'))"
     x-show="status"
     x-text="status"
