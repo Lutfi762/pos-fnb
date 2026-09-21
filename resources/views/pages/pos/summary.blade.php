@@ -89,8 +89,8 @@
 <div
     wire:ignore
     x-data="{ status: '', blocked: false }"
-    x-on:offline-draft-queued.window="status = @js(__('pos.offline_queued'))"
-    x-on:offline-draft-sent.window="status = @js(__('pos.offline_sent')); setTimeout(() => window.location.reload(), 1000)"
+    x-on:offline-draft-queued.window="blocked = false; status = @js(__('pos.offline_queued'))"
+    x-on:offline-draft-sent.window="blocked = false; status = @js(__('pos.offline_sent')); setTimeout(() => window.location.reload(), 1000)"
     x-on:offline-draft-blocked.window="blocked = true; status = $event.detail.status === 409 ? @js(__('pos.offline_conflict')) : @js(__('pos.offline_invalid'))"
     x-show="status"
     x-cloak
@@ -100,7 +100,7 @@
     data-test="offline-draft-status"
 >
     <span x-text="status"></span>
-    <button x-show="blocked" x-on:click="window.dispatchEvent(new CustomEvent('offline-draft-discard')); blocked = false" type="button" class="pos-offline-discard">
+    <button x-show="blocked" x-on:click="window.dispatchEvent(new CustomEvent('offline-draft-discard')); blocked = false; status = ''" type="button" class="pos-offline-discard">
         {{ __('pos.offline_discard') }}
     </button>
 </div>
