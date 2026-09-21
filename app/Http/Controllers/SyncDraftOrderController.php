@@ -26,6 +26,8 @@ class SyncDraftOrderController
             'customer_name' => ['nullable', 'string', 'max:255'],
             'lines' => ['required', 'array', 'min:1', 'max:100'],
             'lines.*.variant_id' => ['required', 'string'],
+            'lines.*.modifier_ids' => ['present', 'array', 'max:20'],
+            'lines.*.modifier_ids.*' => ['string', 'distinct'],
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'lines.*.note' => ['nullable', 'string', 'max:2000'],
         ]);

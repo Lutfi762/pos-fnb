@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Domain\Catalog\Models\Category;
+use App\Domain\Catalog\Models\Modifier;
+use App\Domain\Catalog\Models\ModifierGroup;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductVariant;
 use App\Domain\Identity\CurrentOutlet;
@@ -31,7 +33,7 @@ function draftPayload(ProductVariant $variant, ?string $orderKey = null, ?int $r
         'type' => 'take_away',
         'guest_count' => 1,
         'customer_name' => 'Ayu',
-        'lines' => [['variant_id' => $variant->getKey(), 'quantity' => 2, 'note' => null, 'unit_price' => 1]],
+        'lines' => [['variant_id' => $variant->getKey(), 'modifier_ids' => [], 'quantity' => 2, 'note' => null, 'unit_price' => 1]],
     ];
 }
 
@@ -41,6 +43,25 @@ it('rebuilds a synced draft price from the server catalog', function (): void {
         ->assertJsonPath('status', 'applied');
 
     expect(Order::query()->sole()->items()->sole()->unit_price)->toBe(20_000);
+});
+
+it('rebuilds modifier snapshots from the server catalog', function (): void {
+    $group = ModifierGroup::factory()->create(['min_select' => 1, 'max_select' => 1]);
+    $this->variant->product->modifierGroups()->attach($group);
+    $modifier = Modifier::factory()->for($group, 'group')->create(['price' => 3_000]);
+    $payload = draftPayload($this->variant);
+    $payload['lines'][0]['modifier_ids'] = [$modifier->getKey()];
+
+    $this->postJson(route('sync.draft-orders.store'), $payload)->assertOk();
+
+    expect(Order::query()->sole()->items()->sole()->modifiers()->sole()->price)->toBe(3_000);
+});
+
+it('refuses a modifier that is not attached to the product', function (): void {
+    $payload = draftPayload($this->variant);
+    $payload['lines'][0]['modifier_ids'] = [Modifier::factory()->create()->getKey()];
+
+    $this->postJson(route('sync.draft-orders.store'), $payload)->assertUnprocessable();
 });
 
 it('applies a replayed operation once', function (): void {

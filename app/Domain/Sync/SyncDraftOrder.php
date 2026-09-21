@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 class SyncDraftOrder
 {
     /**
-     * @param  array{operation_key: string, client_order_key: string, revision: int|null, type: string, guest_count: int, customer_name: string|null, lines: list<array{variant_id: string, quantity: int, note: string|null}>}  $payload
+     * @param  array{operation_key: string, client_order_key: string, revision: int|null, type: string, guest_count: int, customer_name: string|null, lines: list<array{variant_id: string, modifier_ids: list<string>, quantity: int, note: string|null}>}  $payload
      * @return array{operation: SyncOperation, order: Order|null, conflict: bool}
      */
     public function handle(Outlet $outlet, User $user, Device $device, array $payload): array
@@ -69,13 +69,13 @@ class SyncDraftOrder
         });
     }
 
-    /** @param list<array{variant_id: string, quantity: int, note: string|null}> $payload */
+    /** @param list<array{variant_id: string, modifier_ids: list<string>, quantity: int, note: string|null}> $payload */
     private function lines(array $payload, Outlet $outlet): array
     {
         return array_map(function (array $line) use ($outlet): array {
-            $variant = ProductVariant::query()->with(['product.modifierGroups', 'outletPrices'])->findOrFail($line['variant_id']);
+            $variant = ProductVariant::query()->with(['product.modifierGroups.modifiers', 'outletPrices'])->findOrFail($line['variant_id']);
             abort_unless($variant->is_active && $variant->product->is_active, 422, 'Produk tidak tersedia.');
-            abort_if($variant->product->modifierGroups->isNotEmpty(), 422, 'Produk dengan modifier belum dapat disinkronkan offline.');
+            $modifiers = $this->modifiers($variant, $line['modifier_ids']);
 
             return [
                 'product_variant_id' => $variant->getKey(),
@@ -84,10 +84,40 @@ class SyncDraftOrder
                 'station' => $variant->product->station,
                 'quantity' => $line['quantity'],
                 'unit_price' => $variant->priceFor($outlet),
-                'modifier_total' => 0,
+                'modifier_total' => array_sum(array_column($modifiers, 'price')),
                 'note' => $line['note'],
-                'modifiers' => [],
+                'modifiers' => $modifiers,
             ];
         }, $payload);
+    }
+
+    /**
+     * @param  list<string>  $ids
+     * @return list<array{modifier_id: string, modifier_name: string, group_name: string, price: int}>
+     */
+    private function modifiers(ProductVariant $variant, array $ids): array
+    {
+        $rows = [];
+
+        foreach ($variant->product->modifierGroups as $group) {
+            $selected = $group->modifiers->whereIn('id', $ids)->values();
+
+            abort_unless($selected->count() >= $group->min_select && $selected->count() <= $group->max_select, 422, 'Pilihan modifier tidak valid.');
+
+            foreach ($selected as $modifier) {
+                abort_unless($group->is_active && $modifier->is_active, 422, 'Modifier tidak tersedia.');
+
+                $rows[] = [
+                    'modifier_id' => $modifier->getKey(),
+                    'modifier_name' => $modifier->name,
+                    'group_name' => $group->name,
+                    'price' => $modifier->price,
+                ];
+            }
+        }
+
+        abort_unless(count($rows) === count($ids), 422, 'Pilihan modifier tidak valid.');
+
+        return $rows;
     }
 }
