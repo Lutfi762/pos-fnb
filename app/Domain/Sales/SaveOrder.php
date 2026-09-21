@@ -49,7 +49,13 @@ class SaveOrder
 
             $this->writeLines($order, $lines);
 
-            return $this->refreshTotals($order, $outlet, $attributes);
+            $order = $this->refreshTotals($order, $outlet, $attributes);
+
+            // Each completed write changes the version used by an offline
+            // client to detect that another terminal edited this bill first.
+            $order->increment('revision');
+
+            return $order->refresh();
         });
     }
 

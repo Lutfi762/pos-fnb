@@ -29,6 +29,7 @@ class Order extends DomainModel
             'type' => OrderType::class,
             'status' => OrderStatus::class,
             'guest_count' => 'integer',
+            'revision' => 'integer',
             'subtotal' => 'integer',
             'discount_total' => 'integer',
             'service_charge_total' => 'integer',
