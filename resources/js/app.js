@@ -1,3 +1,5 @@
+import { installOfflineDraftQueue } from './offline-drafts';
+
 /*
  * The app shell stays available when a connection drops. The worker only
  * caches public assets; HTML and write requests always need the server, so a
@@ -6,3 +8,5 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js'));
 }
+
+installOfflineDraftQueue();

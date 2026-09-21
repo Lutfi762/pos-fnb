@@ -93,6 +93,7 @@
         wire:click="saveBill"
         :disabled="$cart === []"
         data-test="save-bill"
+        data-offline-draft-save
     >
         {{ __('pos.save_bill') }}
     </flux:button>
