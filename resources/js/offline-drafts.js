@@ -90,15 +90,19 @@ async function send(operation) {
     if (response.ok) {
         await remove(operation.operation_key);
 
-        return true;
+        return 'sent';
     }
 
     // Conflict and validation failures need a cashier, never an automatic retry.
     if (response.status === 409 || response.status === 422) {
-        await remove(operation.operation_key);
+        operation.blocked_status = response.status;
+        await put(operation);
+        window.dispatchEvent(new CustomEvent('offline-draft-blocked', { detail: { status: response.status } }));
+
+        return 'blocked';
     }
 
-    return false;
+    return 'retry';
 }
 
 export async function flushOfflineDrafts() {
@@ -107,8 +111,16 @@ export async function flushOfflineDrafts() {
     }
 
     for (const operation of await queued()) {
+        if (operation.blocked_status) {
+            window.dispatchEvent(new CustomEvent('offline-draft-blocked', { detail: { status: operation.blocked_status } }));
+
+            continue;
+        }
+
         try {
-            await send(operation);
+            if ((await send(operation)) === 'retry') {
+                return;
+            }
         } catch {
             return;
         }
