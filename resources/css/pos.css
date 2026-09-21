@@ -414,6 +414,14 @@
     padding: 0.625rem 0.75rem;
 }
 
+.pos-offline-discard {
+    color: inherit;
+    float: right;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
 /* Thumb-sized: these two are pressed hundreds of times a shift. */
 .pos-action {
     min-height: 3rem;

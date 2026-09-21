@@ -61,6 +61,14 @@ async function remove(key) {
     });
 }
 
+async function discardBlockedOfflineDrafts() {
+    for (const operation of await queued()) {
+        if (operation.blocked_status) {
+            await remove(operation.operation_key);
+        }
+    }
+}
+
 function payload(wire) {
     return {
         operation_key: id(),
@@ -131,6 +139,7 @@ export async function flushOfflineDrafts() {
 export function installOfflineDraftQueue() {
     window.addEventListener('online', () => void flushOfflineDrafts());
     window.addEventListener('load', () => void flushOfflineDrafts());
+    window.addEventListener('offline-draft-discard', () => void discardBlockedOfflineDrafts());
 
     document.addEventListener('click', async (event) => {
         const button = event.target.closest('[data-offline-draft-save]');

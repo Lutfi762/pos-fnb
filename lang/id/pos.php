@@ -80,6 +80,7 @@ return [
     'offline_sent' => 'Draft offline berhasil dikirim.',
     'offline_conflict' => 'Draft offline bentrok. Periksa dan simpan ulang pesanan.',
     'offline_invalid' => 'Draft offline tidak lagi valid. Periksa menu dan simpan ulang pesanan.',
+    'offline_discard' => 'Hapus draft tertahan',
     'pay' => 'Bayar',
     'order_closed' => 'Bill ini sudah ditutup dan tidak bisa diubah.',
     'open_bills' => 'Bill berjalan',
