@@ -2,6 +2,7 @@
 
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\ScreenLock;
+use App\Http\Controllers\SyncDraftOrderController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,8 @@ Route::middleware(['auth', 'verified', 'outlet'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function () {
+    Route::post('sync/draft-orders', SyncDraftOrderController::class)->name('sync.draft-orders.store');
+
     // The landing page after login is the sales report. Cashiers may open it
     // too: the page itself hides the cost and margin figures from them.
     Route::livewire('dashboard', 'pages::dashboard')->name('dashboard');
