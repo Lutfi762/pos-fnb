@@ -29,9 +29,25 @@ async function put(operation) {
     const database = await open();
 
     return new Promise((resolve, reject) => {
-        const request = database.transaction(STORE, 'readwrite').objectStore(STORE).put(operation);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
+        const store = database.transaction(STORE, 'readwrite').objectStore(STORE);
+        const existing = store.getAll();
+
+        existing.onsuccess = () => {
+            const previous = existing.result[0];
+
+            // One visible new cart is one draft. Retain both keys while its
+            // cashier edits it offline, so a retry cannot create a second bill.
+            if (previous) {
+                operation.operation_key = previous.operation_key;
+                operation.client_order_key = previous.client_order_key;
+                store.delete(previous.operation_key);
+            }
+
+            store.put(operation);
+        };
+        existing.onerror = () => reject(existing.error);
+        store.transaction.oncomplete = () => resolve();
+        store.transaction.onerror = () => reject(store.transaction.error);
     });
 }
 
