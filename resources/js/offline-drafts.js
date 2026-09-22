@@ -1,5 +1,6 @@
 const DATABASE = 'meja-offline';
 const STORE = 'draft-operations';
+const META = 'metadata';
 
 function id() {
     return crypto.randomUUID();
@@ -7,9 +8,16 @@ function id() {
 
 function open() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DATABASE, 1);
+        const request = indexedDB.open(DATABASE, 3);
 
-        request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: 'operation_key' });
+        request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains(STORE)) {
+                request.result.createObjectStore(STORE, { keyPath: 'operation_key' });
+            }
+            if (!request.result.objectStoreNames.contains(META)) {
+                request.result.createObjectStore(META);
+            }
+        };
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
     });
@@ -20,7 +28,7 @@ async function queued() {
 
     return new Promise((resolve, reject) => {
         const request = database.transaction(STORE).objectStore(STORE).getAll();
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => resolve(request.result.sort((left, right) => left.sequence - right.sequence));
         request.onerror = () => reject(request.error);
     });
 }
@@ -40,6 +48,8 @@ async function put(operation) {
             if (previous) {
                 operation.operation_key = previous.operation_key;
                 operation.client_order_key = previous.client_order_key;
+                operation.sequence = previous.sequence;
+                operation.client_created_at = previous.client_created_at;
                 store.delete(previous.operation_key);
             }
 
@@ -48,6 +58,22 @@ async function put(operation) {
         existing.onerror = () => reject(existing.error);
         store.transaction.oncomplete = () => resolve();
         store.transaction.onerror = () => reject(store.transaction.error);
+    });
+}
+
+async function nextSequence() {
+    const database = await open();
+
+    return new Promise((resolve, reject) => {
+        const store = database.transaction(META, 'readwrite').objectStore(META);
+        const current = store.get('last_sequence');
+
+        current.onsuccess = () => {
+            const sequence = (current.result || 0) + 1;
+            store.put(sequence, 'last_sequence');
+            resolve(sequence);
+        };
+        current.onerror = () => reject(current.error);
     });
 }
 
@@ -72,6 +98,8 @@ async function discardBlockedOfflineDrafts() {
 function payload(wire) {
     return {
         operation_key: id(),
+        sequence: 0,
+        client_created_at: new Date().toISOString(),
         client_order_key: id(),
         revision: null,
         type: wire.orderType,
@@ -123,11 +151,11 @@ export async function flushOfflineDrafts() {
         if (operation.blocked_status) {
             window.dispatchEvent(new CustomEvent('offline-draft-blocked', { detail: { status: operation.blocked_status } }));
 
-            continue;
+            return;
         }
 
         try {
-            if ((await send(operation)) === 'retry') {
+            if ((await send(operation)) !== 'sent') {
                 return;
             }
         } catch {
@@ -160,7 +188,9 @@ export function installOfflineDraftQueue() {
         event.stopImmediatePropagation();
 
         try {
-            await put(payload(wire));
+            const operation = payload(wire);
+            operation.sequence = await nextSequence();
+            await put(operation);
             window.dispatchEvent(new CustomEvent('offline-draft-queued'));
         } catch {
             // Storage can be disabled or full. Keep the cart on screen instead.

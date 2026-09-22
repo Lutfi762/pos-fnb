@@ -24,6 +24,8 @@ class SyncDraftOrder
     public function handle(Outlet $outlet, User $user, Device $device, array $payload): array
     {
         return DB::transaction(function () use ($outlet, $user, $device, $payload): array {
+            app(SequencedOperation::class)->assertCanApply($device, $payload['operation_key'], $payload['sequence']);
+
             $operation = SyncOperation::query()->firstOrCreate(
                 ['operation_key' => $payload['operation_key']],
                 [
@@ -32,7 +34,8 @@ class SyncDraftOrder
                     'user_id' => $user->getKey(),
                     'type' => 'draft_order',
                     'payload' => $payload,
-                    'client_created_at' => now(),
+                    'sequence' => $payload['sequence'],
+                    'client_created_at' => $payload['client_created_at'],
                 ],
             );
 

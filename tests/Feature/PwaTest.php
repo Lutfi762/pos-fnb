@@ -24,7 +24,7 @@ it('links the manifest and worker entry point from app pages', function (): void
     expect(File::get(resource_path('js/app.js')))
         ->toContain("navigator.serviceWorker.register('/service-worker.js')")
         ->and(File::get(resource_path('js/offline-drafts.js')))
-        ->toContain("const DATABASE = 'meja-offline'", "'/sync/draft-orders'", 'previous.operation_key', '! operation.blocked_status', 'blocked_status', 'offline-draft-blocked', 'offline-draft-discard', 'offline-draft-sent', 'data-offline-draft-save');
+        ->toContain("const DATABASE = 'meja-offline'", "'/sync/draft-orders'", 'previous.operation_key', 'left.sequence - right.sequence', "(await send(operation)) !== 'sent'", 'blocked_status', 'offline-draft-blocked', 'offline-draft-discard', 'offline-draft-sent', 'data-offline-draft-save');
 
     expect(File::get(resource_path('views/pages/pos/summary.blade.php')))
         ->toContain('offline-draft-status', 'offline-draft-sent.window', 'offline-draft-discard', 'window.location.reload()');

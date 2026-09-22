@@ -18,6 +18,7 @@ class SyncOperation extends DomainModel
             'payload' => 'array',
             'status' => SyncStatus::class,
             'attempts' => 'integer',
+            'sequence' => 'integer',
             'client_created_at' => 'datetime',
             'processed_at' => 'datetime',
         ];

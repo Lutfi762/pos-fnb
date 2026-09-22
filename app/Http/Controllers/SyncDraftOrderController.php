@@ -19,6 +19,8 @@ class SyncDraftOrderController
     {
         $data = $request->validate([
             'operation_key' => ['required', 'string', 'max:255'],
+            'sequence' => ['required', 'integer', 'min:1'],
+            'client_created_at' => ['required', 'date'],
             'client_order_key' => ['required', 'string', 'max:255'],
             'revision' => ['nullable', 'integer', 'min:1'],
             'type' => ['required', Rule::in(['dine_in', 'take_away', 'delivery'])],
