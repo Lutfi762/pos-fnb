@@ -33,7 +33,7 @@ async function put(operation) {
         const existing = store.getAll();
 
         existing.onsuccess = () => {
-            const previous = existing.result[0];
+            const previous = existing.result.find((operation) => ! operation.blocked_status);
 
             // One visible new cart is one draft. Retain both keys while its
             // cashier edits it offline, so a retry cannot create a second bill.
