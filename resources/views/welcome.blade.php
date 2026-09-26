@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="flex min-h-screen flex-col items-center justify-center bg-base p-6 text-content">
+    <body class="flex min-h-screen flex-col items-center justify-center bg-canvas p-6 text-content">
         <main class="motion-rise w-full max-w-md text-center">
             <x-app-logo-icon class="mx-auto size-12 text-brand" />
 

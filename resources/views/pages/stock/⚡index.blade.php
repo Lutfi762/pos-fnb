@@ -167,11 +167,7 @@ new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
      */
     public static function amount(float $quantity): string
     {
-        $formatted = number_format($quantity, 3, ',', '.');
-
-        return str_contains($formatted, ',')
-            ? rtrim(rtrim($formatted, '0'), ',')
-            : $formatted;
+        return \App\Support\Quantity::format($quantity);
     }
 }; ?>
 
@@ -184,9 +180,15 @@ new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
             </flux:text>
         </div>
 
-        <flux:button icon="truck" :href="route('purchases.index')" wire:navigate data-test="to-purchases">
-            {{ __('purchasing.title') }}
-        </flux:button>
+        <div class="flex flex-wrap gap-2">
+            <flux:button icon="trash" :href="route('stock.waste')" wire:navigate data-test="to-waste">
+                {{ __('waste.nav') }}
+            </flux:button>
+
+            <flux:button icon="truck" :href="route('purchases.index')" wire:navigate data-test="to-purchases">
+                {{ __('purchasing.title') }}
+            </flux:button>
+        </div>
     </div>
 
     @if ($this->negative->isNotEmpty())

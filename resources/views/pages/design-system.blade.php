@@ -17,7 +17,7 @@
                     'done' => 'bg-done-surface text-done-text',
                     'surface' => 'bg-surface text-content border border-line',
                     'surface-sunken' => 'bg-surface-sunken text-content',
-                    'base' => 'bg-base text-content border border-line',
+                    'base' => 'bg-canvas text-content border border-line',
                 ] as $name => $classes)
                     <div class="{{ $classes }} flex min-h-20 flex-col justify-end rounded-lg p-3">
                         <span class="font-mono text-xs">{{ $name }}</span>

@@ -252,6 +252,13 @@ new #[Layout('layouts::app')] #[Title('Shift kasir')] class extends Component {
                 </div>
             @endif
 
+            @if ($this->summary['refunds'] > 0)
+                <div>
+                    <dt>{{ __('shifts.cash_refunds') }}</dt>
+                    <dd><x-money :amount="-$this->summary['refunds']" data-test="shift-refunds" /></dd>
+                </div>
+            @endif
+
             @if ($this->summary['cash_out'] > 0)
                 <div>
                     <dt>{{ __('shifts.cash_out') }}</dt>

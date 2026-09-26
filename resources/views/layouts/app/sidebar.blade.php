@@ -46,12 +46,18 @@
                     @endif
 
                     @if ($role?->managesStock())
-                        <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.*')" wire:navigate>
+                        <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.index')" wire:navigate>
                             {{ __('inventory.title') }}
                         </flux:sidebar.item>
 
                         <flux:sidebar.item icon="truck" :href="route('purchases.index')" :current="request()->routeIs('purchases.*')" wire:navigate>
                             {{ __('purchasing.title') }}
+                        </flux:sidebar.item>
+                    @endif
+
+                    @if ($role?->logsWaste())
+                        <flux:sidebar.item icon="trash" :href="route('stock.waste')" :current="request()->routeIs('stock.waste')" wire:navigate data-test="nav-waste">
+                            {{ __('waste.nav') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

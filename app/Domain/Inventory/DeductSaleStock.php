@@ -96,21 +96,35 @@ class DeductSaleStock
             fn (OrderItem $item): bool => $item->status === OrderItemStatus::Voided || $item->product_variant_id === null,
         );
 
-        if ($lines->isEmpty()) {
+        return $this->usageFor($lines->map(fn (OrderItem $item): array => [
+            'variant_id' => (string) $item->product_variant_id,
+            'quantity' => (float) $item->quantity,
+        ])->values()->all());
+    }
+
+    /**
+     * Ingredient totals for any set of servings.
+     *
+     * @param  list<array{variant_id: string, quantity: float}>  $lines
+     * @return array<string, float> inventory item id to quantity used
+     */
+    public function usageFor(array $lines): array
+    {
+        if ($lines === []) {
             return [];
         }
 
         $recipes = RecipeItem::query()
-            ->whereIn('product_variant_id', $lines->pluck('product_variant_id')->unique()->all())
+            ->whereIn('product_variant_id', array_unique(array_column($lines, 'variant_id')))
             ->get()
             ->groupBy('product_variant_id');
 
         $usage = [];
 
         foreach ($lines as $line) {
-            foreach ($recipes->get($line->product_variant_id, collect()) as $recipe) {
+            foreach ($recipes->get($line['variant_id'], collect()) as $recipe) {
                 $key = (string) $recipe->inventory_item_id;
-                $usage[$key] = round(($usage[$key] ?? 0) + (float) $recipe->quantity * (float) $line->quantity, 3);
+                $usage[$key] = round(($usage[$key] ?? 0) + (float) $recipe->quantity * $line['quantity'], 3);
             }
         }
 

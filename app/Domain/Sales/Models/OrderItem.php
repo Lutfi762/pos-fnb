@@ -63,6 +63,14 @@ class OrderItem extends DomainModel
         return $this->hasMany(OrderItemModifier::class);
     }
 
+    /**
+     * @return HasMany<RefundItem, $this>
+     */
+    public function refundItems(): HasMany
+    {
+        return $this->hasMany(RefundItem::class);
+    }
+
     protected static function newFactory(): OrderItemFactory
     {
         return OrderItemFactory::new();

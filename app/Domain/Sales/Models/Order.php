@@ -38,6 +38,7 @@ class Order extends DomainModel
             'grand_total' => 'integer',
             'paid_total' => 'integer',
             'change_total' => 'integer',
+            'refunded_total' => 'integer',
             'tax_percent' => 'decimal:2',
             'service_charge_percent' => 'decimal:2',
             'price_includes_tax' => 'boolean',
@@ -101,6 +102,22 @@ class Order extends DomainModel
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * @return HasMany<Refund, $this>
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * What can still be given back: what was charged less earlier refunds.
+     */
+    public function refundable(): int
+    {
+        return max(0, $this->grand_total - $this->refunded_total);
     }
 
     /**

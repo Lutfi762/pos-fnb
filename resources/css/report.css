@@ -145,6 +145,18 @@
     border-top: 1px solid var(--border);
 }
 
+/* Text columns read from the start; numbers stay on the right. */
+.report-table .text-start {
+    text-align: start;
+}
+
+/* A cell holding a sentence, such as an import error, wraps instead of
+   pushing the table sideways. */
+.report-table .wrap {
+    min-width: 16rem;
+    white-space: normal;
+}
+
 /* The first column is a name, and names read better left to right. */
 .report-table tbody th {
     max-width: 14rem;

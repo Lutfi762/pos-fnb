@@ -25,14 +25,14 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi test/build/browser dan commit `feat: pembayaran tunai, shift, dan cache katalog saat offline`
 
 ## Fase 2 — Refund, waste, impor menu
-- [ ] Refund penuh/sebagian, alasan, restock, peminta, penyetuju, waktu
-- [ ] PIN supervisor, order paid immutable, audit, struk dan riwayat refund
-- [ ] Restock movement dan business date refund
-- [ ] Layar waste, movement bernilai, daftar/filter dan total terpisah dari HPP penjualan
-- [ ] Pasang maatwebsite/excel
-- [ ] Template/impor/pratinjau/laporan baris rusak/opsi lewati atomik
-- [ ] Test refund, PIN, restock, tanggal, waste, impor
-- [ ] Validasi dan commit `feat: refund dengan persetujuan, log waste, dan impor menu`
+- [x] Refund penuh/sebagian, alasan, restock, peminta, penyetuju, waktu
+- [x] PIN supervisor, order paid immutable, audit, struk dan riwayat refund
+- [x] Restock movement (business date refund menyusul di Fase 4 bersama kolom business_date)
+- [x] Layar waste, movement bernilai, daftar/filter dan total terpisah dari HPP penjualan
+- [x] ~~Pasang maatwebsite/excel~~ diganti penulis/pembaca XLSX bawaan (`app/Support/Spreadsheet`), tanpa dependensi
+- [x] Template/impor/pratinjau/laporan baris rusak/opsi lewati atomik
+- [x] Test refund, PIN, restock, tanggal, waste, impor
+- [x] Validasi dan commit `feat: refund dengan persetujuan, log waste, dan impor menu`
 
 ## Fase 3 — QRIS dan gateway
 - [ ] PaymentGateway, driver gateway pilihan dan fake driver
@@ -87,6 +87,10 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 1: kasir offline di /pos/offline (Alpine + IndexedDB, dilayani service worker saat offline), outbox berurutan ke POST /sync/operations, diagnosa manajer di /sync.
 - Ditemukan & diperbaiki di Fase 1: stok bahan belum pernah terpotong saat penjualan (sekarang DeductSaleStock saat bill lunas); cache menu gagal dibaca ulang karena cache.serializable_classes=false (layar kasir error di muatan kedua) — kelas menu sekarang di-allow-list + test penjaga.
 - Hitungan total JS (resources/js/offline/totals.js) dicek silang dengan CalculateTotals PHP pada 3.000 keranjang acak: identik.
+- Fase 2 selesai 2026-09-26. Refund di layar struk (/pos/{order}/receipt), waste di /stock/waste (dapur juga boleh), impor menu dari tombol di /catalog.
+- Ditemukan & diperbaiki di Fase 2: token warna `--color-base` bentrok dengan utilitas ukuran `text-base` Tailwind, sehingga semua `flux:heading size="lg"` berwarna hampir putih di mode terang. Token diganti `--color-canvas` (`bg-canvas`).
+- Ditemukan & diperbaiki di Fase 2: Livewire 4 tidak memuat ulang relasi model publik di request berikutnya; layar struk sekarang memuat ulang relasinya di `hydrate()`.
+- Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.
 - Untracked sebelum audit: `Claude outputs/`; tidak disentuh.

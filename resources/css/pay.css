@@ -202,6 +202,44 @@
     color: var(--state-pending-text);
 }
 
+/* Refunds ---------------------------------------------------------------- */
+
+.receipt-refunds {
+    display: grid;
+    gap: 0.375rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed currentColor;
+}
+
+.receipt-refunds-title {
+    font-weight: 700;
+}
+
+.receipt-refunds-net {
+    padding-top: 0.25rem;
+    font-weight: 700;
+}
+
+.refund-lines {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.refund-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+}
+
+.refund-qty {
+    width: 5.5rem;
+    flex: none;
+}
+
 /* Cash in and out, folded away until needed. */
 .shift-moves-summary {
     min-height: 2.75rem;

@@ -10,6 +10,7 @@ use App\Domain\Sales\Models\CashierShift;
 use App\Domain\Sales\Models\CashMovement;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\Models\Payment;
+use App\Domain\Sales\Models\Refund;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -115,6 +116,17 @@ class ShiftRegister
     }
 
     /**
+     * Cash handed back to guests from this drawer.
+     */
+    public function cashRefunded(CashierShift $shift): int
+    {
+        return (int) Refund::query()
+            ->where('cashier_shift_id', $shift->getKey())
+            ->whereHas('method', fn ($query) => $query->where('type', 'cash'))
+            ->sum('amount');
+    }
+
+    /**
      * Cash put in minus cash taken out, for the drawer count.
      */
     public function cashMoved(CashierShift $shift): int
@@ -130,7 +142,7 @@ class ShiftRegister
      */
     public function expectedCash(CashierShift $shift): int
     {
-        return $shift->opening_cash + $this->cashTaken($shift) + $this->cashMoved($shift);
+        return $shift->opening_cash + $this->cashTaken($shift) + $this->cashMoved($shift) - $this->cashRefunded($shift);
     }
 
     /**
@@ -146,7 +158,7 @@ class ShiftRegister
     /**
      * The numbers a cashier reads off the screen before counting the drawer.
      *
-     * @return array{orders: int, gross: int, methods: Collection<int, object{name: string, total: int}>, cash_in: int, cash_out: int}
+     * @return array{orders: int, gross: int, methods: Collection<int, object{name: string, total: int}>, cash_in: int, cash_out: int, refunds: int}
      */
     public function summary(CashierShift $shift): array
     {
@@ -171,6 +183,7 @@ class ShiftRegister
             'methods' => $methods,
             'cash_in' => (int) $shift->cashMovements()->where('direction', CashMovement::IN)->sum('amount'),
             'cash_out' => (int) $shift->cashMovements()->where('direction', CashMovement::OUT)->sum('amount'),
+            'refunds' => $this->cashRefunded($shift),
         ];
     }
 

@@ -40,4 +40,13 @@ enum Role: string
     {
         return $this->managesOutlet() || $this === self::Warehouse;
     }
+
+    /**
+     * Roles that throw things away and write it down: the stockroom, plus the
+     * kitchen, where most of the spilling happens.
+     */
+    public function logsWaste(): bool
+    {
+        return $this->managesStock() || $this === self::Kitchen;
+    }
 }

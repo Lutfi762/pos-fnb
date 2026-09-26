@@ -71,9 +71,7 @@ new #[Layout('layouts::app')] #[Title('Pesanan pembelian')] class extends Compon
     /** Quantities read as whole numbers unless the fraction matters. */
     public static function amount(float $quantity): string
     {
-        $formatted = number_format($quantity, 3, ',', '.');
-
-        return str_contains($formatted, ',') ? rtrim(rtrim($formatted, '0'), ',') : $formatted;
+        return \App\Support\Quantity::format($quantity);
     }
 }; ?>
 

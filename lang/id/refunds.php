@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Refund',
+    'start' => 'Refund',
+    'heading' => 'Refund bill :number',
+    'intro' => 'Pilih item dan jumlah yang dikembalikan. Bill aslinya tidak berubah; refund dicatat pada tanggal hari ini.',
+    'item' => 'Item',
+    'refundable' => 'Bisa direfund',
+    'quantity' => 'Jumlah refund',
+    'amount' => 'Uang kembali',
+    'reason' => 'Alasan',
+    'reason_placeholder' => 'Contoh: minuman terlalu manis, tamu minta ganti uang',
+    'restock' => 'Kembalikan bahan ke stok',
+    'restock_hint' => 'Centang hanya bila barang belum dipakai, misalnya botol yang masih tersegel.',
+    'method' => 'Dikembalikan lewat',
+    'supervisor_pin' => 'PIN supervisor',
+    'supervisor_hint' => 'Refund selalu butuh persetujuan manajer atau owner outlet ini.',
+    'confirm' => 'Refund :amount',
+    'cancel' => 'Batal',
+    'done' => 'Refund :amount tercatat.',
+    'history' => 'Riwayat refund',
+    'by' => 'oleh :name, disetujui :approver',
+    'restocked' => 'stok dikembalikan',
+    'refunded_total' => 'Sudah direfund',
+    'net_paid' => 'Bersih diterima',
+    'estimate' => 'Perkiraan uang kembali',
+
+    'reason_required' => 'Tulis alasan refund.',
+    'not_paid' => 'Hanya bill yang sudah lunas yang bisa direfund.',
+    'unknown_line' => 'Item ini tidak ada di bill.',
+    'too_many' => 'Jumlah refund untuk :item melebihi yang tersisa.',
+    'nothing_selected' => 'Pilih minimal satu item untuk direfund.',
+    'nothing_left' => 'Bill ini sudah direfund seluruhnya.',
+    'pin_invalid' => 'PIN salah atau bukan supervisor outlet ini.',
+    'locked' => 'Terlalu banyak PIN salah. Coba lagi dalam 5 menit.',
+    'approver_required' => 'Refund harus disetujui manajer atau owner outlet ini.',
+];

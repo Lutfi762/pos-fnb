@@ -12,7 +12,7 @@
         @include('partials.head', ['title' => __('offline.title')])
         <meta name="meja-app" content="offline">
     </head>
-    <body class="min-h-screen bg-base text-content">
+    <body class="min-h-screen bg-canvas text-content">
         <div
             x-data="offlineTerminal(@js(\App\Support\Labels::group('offline')))"
             class="offline-app"

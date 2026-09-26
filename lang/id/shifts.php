@@ -33,6 +33,7 @@ return [
     'move_cash' => 'Kas masuk / keluar',
     'cash_in' => 'Kas masuk',
     'cash_out' => 'Kas keluar',
+    'cash_refunds' => 'Refund tunai',
     'amount' => 'Jumlah',
     'reason' => 'Keperluan',
     'reason_placeholder' => 'Contoh: beli galon, bayar parkir, tambah receh',

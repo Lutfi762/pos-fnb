@@ -106,7 +106,7 @@
     --color-done-surface: var(--state-done-surface);
     --color-done-text: var(--state-done-text);
 
-    --color-base: var(--base);
+    --color-canvas: var(--base);
     --color-surface: var(--surface);
     --color-surface-sunken: var(--surface-sunken);
     --color-content: var(--text);

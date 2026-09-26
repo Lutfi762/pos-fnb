@@ -12,6 +12,8 @@ enum StockMovementType: string
     case Adjustment = 'adjustment';
     case Transfer = 'transfer';
     case Count = 'count';
+    // Stock put back on the shelf by a refund, such as a sealed bottle returned.
+    case Return = 'return';
 
     public function label(): string
     {

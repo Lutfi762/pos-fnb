@@ -39,12 +39,13 @@ class MoveStock
         ?Model $source = null,
         ?string $note = null,
         ?CarbonInterface $at = null,
+        ?string $reason = null,
     ): StockMovement {
         $quantity = $this->signed($type, $quantity);
 
         abort_if(abs($quantity) < 0.001, 422, __('inventory.quantity_required'));
 
-        return DB::transaction(function () use ($outlet, $item, $type, $quantity, $user, $unitCost, $source, $note, $at): StockMovement {
+        return DB::transaction(function () use ($outlet, $item, $type, $quantity, $user, $unitCost, $source, $note, $at, $reason): StockMovement {
             $level = $this->lockedLevel($outlet, $item);
 
             $balance = round((float) $level->quantity + $quantity, 3);
@@ -68,6 +69,7 @@ class MoveStock
                 'source_type' => $source?->getMorphClass(),
                 'source_id' => $source?->getKey(),
                 'note' => $note,
+                'reason' => $reason,
                 // When it happened on the floor, which for a sale rung up
                 // offline is earlier than when the server heard about it.
                 'moved_at' => $at ?? now(),
@@ -162,6 +164,6 @@ class MoveStock
             return -abs($quantity);
         }
 
-        return $type === StockMovementType::Purchase ? abs($quantity) : $quantity;
+        return in_array($type, [StockMovementType::Purchase, StockMovementType::Return], true) ? abs($quantity) : $quantity;
     }
 }

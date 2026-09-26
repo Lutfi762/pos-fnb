@@ -2,6 +2,7 @@
 
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\ScreenLock;
+use App\Http\Controllers\CatalogImportTemplateController;
 use App\Http\Controllers\OfflineController;
 use App\Http\Controllers\SyncOperationController;
 use App\Http\Middleware\SetLocale;
@@ -82,9 +83,15 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
         Route::livewire('purchases/{purchaseOrder}/edit', 'pages::purchases.edit')->name('purchases.edit');
     });
 
+    // Waste is logged where it happens, which includes the kitchen.
+    Route::livewire('stock/waste', 'pages::stock.waste')
+        ->middleware('role:owner,manager,warehouse,kitchen')
+        ->name('stock.waste');
+
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');
+        Route::get('catalog/import/template', CatalogImportTemplateController::class)->name('catalog.import.template');
         Route::livewire('catalog/create', 'pages::catalog.edit')->name('catalog.create');
         Route::livewire('catalog/{product}/edit', 'pages::catalog.edit')->name('catalog.edit');
     });

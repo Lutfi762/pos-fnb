@@ -54,6 +54,7 @@ return [
         'adjustment' => 'Penyesuaian',
         'transfer' => 'Transfer',
         'count' => 'Opname',
+        'return' => 'Retur refund',
     ],
 
     'review_heading' => 'Stok minus, perlu dihitung ulang',
