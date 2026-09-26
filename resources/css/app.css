@@ -10,6 +10,7 @@
 @import './pay.css';
 @import './kds.css';
 @import './report.css';
+@import './offline.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

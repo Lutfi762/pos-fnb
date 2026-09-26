@@ -85,24 +85,23 @@
     <flux:error name="billDiscountValue" />
 </details>
 
-{{-- Thumb zone: the two buttons a cashier actually presses. --}}
+{{-- Thumb zone: the two buttons a cashier actually presses. When the line
+     is down, either of them hands the cart to the offline till instead. --}}
 <div
     wire:ignore
-    x-data="{ status: '', blocked: false }"
-    x-on:offline-draft-queued.window="blocked = false; status = @js(__('pos.offline_queued'))"
-    x-on:offline-draft-sent.window="blocked = false; status = @js(__('pos.offline_sent')); setTimeout(() => window.location.reload(), 1000)"
-    x-on:offline-draft-blocked.window="blocked = true; status = $event.detail.status === 409 ? @js(__('pos.offline_conflict')) : @js(__('pos.offline_invalid'))"
-    x-show="status"
+    x-data="{ offline: ! navigator.onLine, refused: false }"
+    x-on:online.window="offline = false"
+    x-on:offline.window="offline = true"
+    x-on:meja:handoff-refused.window="refused = true"
+    x-show="offline"
     x-cloak
     class="pos-offline-status"
     role="status"
     aria-live="polite"
-    data-test="offline-draft-status"
+    data-test="offline-handoff-status"
 >
-    <span x-text="status"></span>
-    <button x-show="blocked" x-on:click="window.dispatchEvent(new CustomEvent('offline-draft-discard')); blocked = false; status = ''" type="button" class="pos-offline-discard">
-        {{ __('pos.offline_discard') }}
-    </button>
+    <span x-text="refused ? @js(__('offline.handoff_existing')) : @js(__('offline.handoff_prompt'))"></span>
+    <a href="{{ route('pos.offline') }}" class="pos-offline-discard" data-offline-handoff>{{ __('offline.open_terminal') }}</a>
 </div>
 
 <div class="pos-actions">
@@ -112,7 +111,7 @@
         wire:click="saveBill"
         :disabled="$cart === []"
         data-test="save-bill"
-        data-offline-draft-save
+        data-offline-handoff
     >
         {{ __('pos.save_bill') }}
     </flux:button>
@@ -123,6 +122,7 @@
         wire:click="saveBill(true)"
         :disabled="$cart === []"
         data-test="pay"
+        data-offline-handoff
     >
         {{ __('pos.pay') }} <kbd class="pos-kbd">F2</kbd>
     </flux:button>

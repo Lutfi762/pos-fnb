@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
         @include('partials.head')
+        <meta name="meja-app" content="1">
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
@@ -9,6 +10,8 @@
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
+
+            <x-connection-status class="mx-2 hidden lg:block" />
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
@@ -33,6 +36,12 @@
                     @if ($role?->managesOutlet())
                         <flux:sidebar.item icon="squares-2x2" :href="route('catalog.index')" :current="request()->routeIs('catalog.*')" wire:navigate>
                             {{ __('catalog.title') }}
+                        </flux:sidebar.item>
+                    @endif
+
+                    @if ($role?->managesOutlet())
+                        <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('sync.index')" :current="request()->routeIs('sync.*')" wire:navigate>
+                            {{ __('sync.nav') }}
                         </flux:sidebar.item>
                     @endif
 
@@ -69,6 +78,8 @@
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+
+            <x-connection-status class="ms-1" />
 
             <flux:spacer />
 

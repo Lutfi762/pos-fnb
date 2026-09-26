@@ -10,6 +10,7 @@ use App\Domain\Inventory\Models\InventoryItem;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -37,12 +38,13 @@ class MoveStock
         int $unitCost = 0,
         ?Model $source = null,
         ?string $note = null,
+        ?CarbonInterface $at = null,
     ): StockMovement {
         $quantity = $this->signed($type, $quantity);
 
         abort_if(abs($quantity) < 0.001, 422, __('inventory.quantity_required'));
 
-        return DB::transaction(function () use ($outlet, $item, $type, $quantity, $user, $unitCost, $source, $note): StockMovement {
+        return DB::transaction(function () use ($outlet, $item, $type, $quantity, $user, $unitCost, $source, $note, $at): StockMovement {
             $level = $this->lockedLevel($outlet, $item);
 
             $balance = round((float) $level->quantity + $quantity, 3);
@@ -66,7 +68,9 @@ class MoveStock
                 'source_type' => $source?->getMorphClass(),
                 'source_id' => $source?->getKey(),
                 'note' => $note,
-                'moved_at' => now(),
+                // When it happened on the floor, which for a sale rung up
+                // offline is earlier than when the server heard about it.
+                'moved_at' => $at ?? now(),
             ]);
         });
     }

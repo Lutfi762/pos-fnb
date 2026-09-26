@@ -69,7 +69,8 @@ class SaveOrder
             'user_id' => $cashier->getKey(),
             'cashier_shift_id' => $attributes['cashier_shift_id'] ?? null,
             'dining_table_id' => $attributes['dining_table_id'] ?? null,
-            'number' => $this->numbers->next($outlet),
+            // An offline terminal has already printed its own number.
+            'number' => $attributes['number'] ?? $this->numbers->next($outlet),
             'type' => $attributes['type'] ?? OrderType::DineIn,
             'status' => OrderStatus::Open,
             'guest_count' => $attributes['guest_count'] ?? 1,
@@ -81,7 +82,7 @@ class SaveOrder
             'service_charge_percent' => $outlet->service_charge_percent,
             'price_includes_tax' => $outlet->price_includes_tax,
 
-            'placed_at' => now(),
+            'placed_at' => $attributes['placed_at'] ?? now(),
         ]);
     }
 

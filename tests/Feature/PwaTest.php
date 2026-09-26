@@ -21,11 +21,14 @@ it('links the manifest and worker entry point from app pages', function (): void
         ->assertOk()
         ->assertSee('<link rel="manifest" href="/manifest.webmanifest">', escape: false);
 
-    expect(File::get(resource_path('js/app.js')))
-        ->toContain("navigator.serviceWorker.register('/service-worker.js')")
-        ->and(File::get(resource_path('js/offline-drafts.js')))
-        ->toContain("const DATABASE = 'meja-offline'", "'/sync/draft-orders'", 'previous.operation_key', 'left.sequence - right.sequence', "(await send(operation)) !== 'sent'", 'blocked_status', 'offline-draft-blocked', 'offline-draft-discard', 'offline-draft-sent', 'data-offline-draft-save');
+    expect(File::get(resource_path('js/app.js')))->toContain('installOffline()')
+        ->and(File::get(resource_path('js/offline/index.js')))
+        ->toContain("navigator.serviceWorker.register('/service-worker.js')", "type: 'cache-shell'", 'data-offline-handoff')
+        ->and(File::get(resource_path('js/offline/outbox.js')))
+        ->toContain("'/sync/operations'", 'left.sequence - right.sequence', 'sequence_gap', 'operation.blocked')
+        ->and(File::get(public_path('service-worker.js')))
+        ->toContain("const SHELL_URL = '/pos/offline'", "'cache-shell'", '!response.redirected');
 
     expect(File::get(resource_path('views/pages/pos/summary.blade.php')))
-        ->toContain('offline-draft-status', 'offline-draft-sent.window', 'offline-draft-discard', 'window.location.reload()');
+        ->toContain('data-offline-handoff', 'offline-handoff-status');
 });

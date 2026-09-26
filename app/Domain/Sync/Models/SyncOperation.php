@@ -16,11 +16,13 @@ class SyncOperation extends DomainModel
     {
         return [
             'payload' => 'array',
+            'result' => 'array',
             'status' => SyncStatus::class,
             'attempts' => 'integer',
             'sequence' => 'integer',
             'client_created_at' => 'datetime',
             'processed_at' => 'datetime',
+            'resolved_at' => 'datetime',
         ];
     }
 
@@ -38,6 +40,14 @@ class SyncOperation extends DomainModel
     public function outlet(): BelongsTo
     {
         return $this->belongsTo(Outlet::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function resolver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 
     /**

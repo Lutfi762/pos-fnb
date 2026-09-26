@@ -2,7 +2,8 @@
 
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\ScreenLock;
-use App\Http\Controllers\SyncDraftOrderController;
+use App\Http\Controllers\OfflineController;
+use App\Http\Controllers\SyncOperationController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
@@ -44,7 +45,20 @@ Route::middleware(['auth', 'verified', 'outlet'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function () {
-    Route::post('sync/draft-orders', SyncDraftOrderController::class)->name('sync.draft-orders.store');
+    // The offline till and the data it rings up with.
+    Route::get('pos/offline', [OfflineController::class, 'terminal'])->name('pos.offline');
+    Route::get('pos/offline-data', [OfflineController::class, 'snapshot'])->name('pos.offline-data');
+    Route::get('sync/session', [OfflineController::class, 'session'])->name('sync.session');
+
+    // Where a manager clears commands a terminal could not apply.
+    Route::livewire('sync', 'pages::sync.index')->middleware('role:owner,manager')->name('sync.index');
+
+    // The offline outbox. One general endpoint, plus the three the first
+    // offline release used, kept so terminals holding old commands can flush.
+    Route::post('sync/operations', SyncOperationController::class)->name('sync.operations.store');
+    Route::post('sync/draft-orders', SyncOperationController::class)->defaults('command', 'order.saved')->name('sync.draft-orders.store');
+    Route::post('sync/shifts', SyncOperationController::class)->defaults('command', 'shift')->name('sync.shifts.store');
+    Route::post('sync/cash-payments', SyncOperationController::class)->defaults('command', 'payment.recorded')->name('sync.cash-payments.store');
 
     // The landing page after login is the sales report. Cashiers may open it
     // too: the page itself hides the cost and margin figures from them.

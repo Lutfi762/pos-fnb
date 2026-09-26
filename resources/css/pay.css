@@ -202,6 +202,48 @@
     color: var(--state-pending-text);
 }
 
+/* Cash in and out, folded away until needed. */
+.shift-moves-summary {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.shift-move-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.shift-move-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* The target only appears once the drawer has been counted. */
+.shift-reveal {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.shift-expected-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .shift-reveal {
+        animation: meja-rise var(--dur-slow) var(--ease-out) both;
+    }
+}
+
 /* Receipt --------------------------------------------------------------- */
 
 .receipt-shell {

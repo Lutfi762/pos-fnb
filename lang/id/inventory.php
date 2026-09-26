@@ -55,4 +55,9 @@ return [
         'transfer' => 'Transfer',
         'count' => 'Opname',
     ],
+
+    'review_heading' => 'Stok minus, perlu dihitung ulang',
+    'review_description' => 'Penjualan tetap tercatat, tetapi buku stok berada di bawah nol. Biasanya terjadi saat kasir offline atau barang masuk belum dicatat. Hitung fisik untuk membetulkan.',
+    'review_last_sold' => 'Terakhir terjual :time',
+    'count_now' => 'Hitung sekarang',
 ];

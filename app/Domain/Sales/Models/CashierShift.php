@@ -48,6 +48,14 @@ class CashierShift extends DomainModel
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * @return HasMany<CashMovement, $this>
+     */
+    public function cashMovements(): HasMany
+    {
+        return $this->hasMany(CashMovement::class);
+    }
+
     public function isOpen(): bool
     {
         return $this->closed_at === null;

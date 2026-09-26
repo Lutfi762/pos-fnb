@@ -12,17 +12,17 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Pilihan gateway: Xendit; pakai fake driver sampai kredensial sandbox tersedia
 
 ## Fase 1 — Offline
-- [ ] Outbox per perangkat berurutan: ULID, idempotency key, sequence, waktu perangkat
-- [ ] Perintah: order.saved, payment.recorded, order.line.voided, shift.opened, shift.closed, cash.moved
-- [ ] Tunai offline, cetak struk; non-tunai dinonaktifkan dengan arahan tunai
-- [ ] Shift offline, rekap final terkunci hingga sinkron
-- [ ] Cache IndexedDB katalog, harga, modifier, meja, pajak, staf; status waktu pembaruan
-- [ ] Delta stok server, stok minus, daftar tinjauan manajer
-- [ ] Badge antrean/header dan peringatan perintah >24 jam
-- [ ] Diagnosa sync manajer: gagal per perangkat, retry, tandai selesai beralasan/audit
-- [ ] Gagal menahan perintah setelahnya pada perangkat sama
-- [ ] Test: 15 tunai/reload, replay payment, stok minus 2 perangkat, antrean tertahan, non-tunai offline
-- [ ] Validasi test/build/browser dan commit `feat: pembayaran tunai, shift, dan cache katalog saat offline`
+- [x] Outbox per perangkat berurutan: ULID, idempotency key, sequence, waktu perangkat
+- [x] Perintah: order.saved, payment.recorded, shift.opened, shift.closed, cash.moved (void baris offline = simpan ulang bill tanpa baris itu, sebelum dibayar)
+- [x] Tunai offline, cetak struk; non-tunai dinonaktifkan dengan arahan tunai
+- [x] Shift offline, rekap final terkunci hingga sinkron
+- [x] Cache IndexedDB katalog, harga, modifier, meja, pajak, kasir yang sedang login; status waktu pembaruan (login PIN offline untuk staf lain belum ada)
+- [x] Delta stok server, stok minus, daftar tinjauan manajer
+- [x] Badge antrean/header dan peringatan perintah >24 jam
+- [x] Diagnosa sync manajer: gagal per perangkat, retry, tandai selesai beralasan/audit
+- [x] Gagal menahan perintah setelahnya pada perangkat sama
+- [x] Test: 15 tunai/reload, replay payment, stok minus 2 perangkat, antrean tertahan, non-tunai offline
+- [x] Validasi test/build/browser dan commit `feat: pembayaran tunai, shift, dan cache katalog saat offline`
 
 ## Fase 2 — Refund, waste, impor menu
 - [ ] Refund penuh/sebagian, alasan, restock, peminta, penyetuju, waktu
@@ -83,7 +83,10 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - `resources/views/pages/⚡dashboard.blade.php`: memakai `DateRange` dan `SalesReport` tersebut.
 
 ## Catatan sesi
-- Fase 0 selesai. Fase aktif: 1 — outbox perintah offline.
+- Fase 0 selesai. Fase 1 selesai 2026-09-26 (dikerjakan Claude Cowork).
+- Fase 1: kasir offline di /pos/offline (Alpine + IndexedDB, dilayani service worker saat offline), outbox berurutan ke POST /sync/operations, diagnosa manajer di /sync.
+- Ditemukan & diperbaiki di Fase 1: stok bahan belum pernah terpotong saat penjualan (sekarang DeductSaleStock saat bill lunas); cache menu gagal dibaca ulang karena cache.serializable_classes=false (layar kasir error di muatan kedua) — kelas menu sekarang di-allow-list + test penjaga.
+- Hitungan total JS (resources/js/offline/totals.js) dicek silang dengan CalculateTotals PHP pada 3.000 keranjang acak: identik.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.
 - Untracked sebelum audit: `Claude outputs/`; tidak disentuh.

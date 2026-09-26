@@ -6,6 +6,7 @@ use App\Domain\Inventory\Enums\StockMovementType;
 use App\Domain\Inventory\Models\InventoryItem;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\MoveStock;
+use App\Domain\Inventory\StockReview;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -63,6 +64,17 @@ new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
                 fn (InventoryItem $item): bool => $this->levelOf($item)->needsRestock(),
             ))
             ->values();
+    }
+
+    /**
+     * Ingredients the books say are below zero, waiting to be counted.
+     *
+     * @return Collection<int, StockLevel>
+     */
+    #[Computed]
+    public function negative(): Collection
+    {
+        return app(StockReview::class)->negative($this->outlet);
     }
 
     /**
@@ -176,6 +188,37 @@ new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
             {{ __('purchasing.title') }}
         </flux:button>
     </div>
+
+    @if ($this->negative->isNotEmpty())
+        {{-- Sold below zero, most often while a till was offline. Nothing is
+             wrong with the sales; the shelf just needs counting. --}}
+        <section class="rounded-xl border border-pending bg-pending-surface p-4 text-pending-text" aria-labelledby="stock-review" data-test="stock-review">
+            <flux:heading id="stock-review" size="lg" class="!text-pending-text">{{ __('inventory.review_heading') }}</flux:heading>
+            <p class="mt-1 text-sm">{{ __('inventory.review_description') }}</p>
+
+            <ul class="mt-3 flex flex-col gap-2">
+                @foreach ($this->negative as $level)
+                    <li wire:key="neg-{{ $level->id }}" class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2 text-content">
+                        <span>
+                            <span class="font-medium">{{ $level->item?->name }}</span>
+                            <span class="block text-xs text-content-muted">
+                                @if ($level->last_sold_at)
+                                    {{ __('inventory.review_last_sold', ['time' => \Carbon\CarbonImmutable::parse($level->last_sold_at)->translatedFormat('d M H:i')]) }}
+                                @endif
+                            </span>
+                        </span>
+
+                        <span class="flex items-center gap-3">
+                            <span class="numeric tabular-nums font-semibold text-danger">{{ $this->amount((float) $level->quantity) }} {{ $level->item?->unit?->code }}</span>
+                            <flux:button size="sm" wire:click="edit('{{ $level->inventory_item_id }}', 'count')" data-test="review-count-{{ $level->inventory_item_id }}">
+                                {{ __('inventory.count_now') }}
+                            </flux:button>
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 
     <div class="flex flex-wrap items-end gap-3">
         <flux:input

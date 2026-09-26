@@ -15,6 +15,7 @@ use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\OrderTotals;
 use App\Domain\Sales\SaveOrder;
 use App\Domain\Sales\ShiftRegister;
+use App\Domain\Sales\Supervisors;
 use App\Domain\Sales\TableMap;
 use App\Domain\Sales\TaxProfile;
 use App\Models\User;
@@ -469,12 +470,7 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             return false;
         }
 
-        $supervisor = User::query()
-            ->whereHas('outlets', fn ($query) => $query
-                ->where('outlets.id', $this->outlet->getKey())
-                ->whereIn('role', ['owner', 'manager']))
-            ->get()
-            ->first(fn (User $user): bool => $user->verifyPin($this->supervisorPin));
+        $supervisor = app(Supervisors::class)->approve($this->outlet, $this->supervisorPin);
 
         $this->reset('supervisorPin');
 

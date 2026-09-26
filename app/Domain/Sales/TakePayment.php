@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Inventory\DeductSaleStock;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\PaymentMethod;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -33,6 +35,7 @@ class TakePayment
         int $amount,
         ?int $tendered = null,
         ?string $reference = null,
+        ?CarbonInterface $paidAt = null,
     ): Payment {
         abort_unless($order->status->isEditable(), 409, __('pos.order_closed'));
         abort_unless($amount > 0, 422, __('payments.amount_required'));
@@ -41,7 +44,11 @@ class TakePayment
 
         abort_if($method->needs_reference && $reference === null, 422, __('payments.reference_required'));
 
-        return DB::transaction(function () use ($order, $method, $cashier, $amount, $tendered, $reference): Payment {
+        // A sale rung up offline keeps the moment the guest paid, not the
+        // moment the tablet found a connection again.
+        $paidAt ??= now();
+
+        return DB::transaction(function () use ($order, $method, $cashier, $amount, $tendered, $reference, $paidAt): Payment {
             // Re-read under a lock: two terminals must never both close the bill.
             $order = Order::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
 
@@ -68,7 +75,7 @@ class TakePayment
                 'reference' => $reference,
                 'status' => self::STATUS_CAPTURED,
                 'user_id' => $cashier->getKey(),
-                'paid_at' => now(),
+                'paid_at' => $paidAt,
             ]);
 
             $paid = $order->paid_total + $applied;
@@ -78,8 +85,13 @@ class TakePayment
                 'change_total' => $order->change_total + $change,
             ] + ($paid >= $order->grand_total ? [
                 'status' => OrderStatus::Paid,
-                'paid_at' => now(),
+                'paid_at' => $paidAt,
             ] : []));
+
+            // Settled in full: the dishes are made, so their ingredients go.
+            if ($order->status === OrderStatus::Paid) {
+                app(DeductSaleStock::class)->handle($order, $cashier, $paidAt);
+            }
 
             return $payment;
         });

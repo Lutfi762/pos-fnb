@@ -1,5 +1,13 @@
 <?php
 
+use App\Domain\Catalog\Models\Category;
+use App\Domain\Catalog\Models\Modifier;
+use App\Domain\Catalog\Models\ModifierGroup;
+use App\Domain\Catalog\Models\OutletVariantPrice;
+use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\Models\ProductModifierGroup;
+use App\Domain\Catalog\Models\ProductVariant;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 return [
@@ -131,6 +139,20 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    // The only objects this app puts in the cache: the menu the till reads
+    // on every tap (App\Domain\Catalog\MenuCatalog). Anything not listed
+    // comes back as an incomplete object, so a new relation on the cached
+    // menu must be added here too. MenuCatalogCacheTest guards the list.
+    'serializable_classes' => [
+        Illuminate\Database\Eloquent\Collection::class,
+        Collection::class,
+        Category::class,
+        Modifier::class,
+        ModifierGroup::class,
+        OutletVariantPrice::class,
+        Product::class,
+        ProductModifierGroup::class,
+        ProductVariant::class,
+    ],
 
 ];
