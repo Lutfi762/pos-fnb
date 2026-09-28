@@ -1,18 +1,36 @@
 <?php
 
 use App\Domain\Identity\CurrentOutlet;
+use App\Domain\Sales\Enums\ChargeStatus;
+use App\Domain\Sales\Gateway\FakeGateway;
+use App\Domain\Sales\Gateway\GatewayException;
+use App\Domain\Sales\Gateway\PaymentGateway;
 use App\Domain\Sales\Models\Order;
+use App\Domain\Sales\Models\PaymentCharge;
 use App\Domain\Sales\Models\PaymentMethod;
+use App\Domain\Sales\QrisPayments;
+use App\Domain\Sales\ReceiveWebhook;
 use App\Domain\Sales\TakePayment;
 use App\Support\Money;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
+    use WithFileUploads;
+
     public Order $order;
+
+    /** The dynamic QRIS code on screen, if any. */
+    #[Locked]
+    public ?string $chargeId = null;
+
+    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
+    public $proof = null;
 
     public string $methodId = '';
 
@@ -30,6 +48,46 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
         // The first tender is almost always the whole bill, so it is prefilled.
         $this->amount = Money::format($order->outstanding(), withPrefix: false);
         $this->methodId = (string) $this->methods->first()?->getKey();
+
+        // A reload while a code is showing picks it back up rather than
+        // issuing a second one the guest might also pay.
+        $pending = $order->charges()->where('status', ChargeStatus::Pending)->latest()->first();
+
+        if ($pending instanceof PaymentCharge) {
+            $this->chargeId = $pending->getKey();
+            $this->methodId = (string) $pending->payment_method_id;
+        }
+    }
+
+    /**
+     * Livewire brings the bill back without its lines on each request.
+     */
+    public function hydrate(): void
+    {
+        $this->order->loadMissing(['items', 'payments']);
+    }
+
+    #[Computed]
+    public function charge(): ?PaymentCharge
+    {
+        return $this->chargeId === null
+            ? null
+            : PaymentCharge::query()->where('order_id', $this->order->getKey())->find($this->chargeId);
+    }
+
+    /**
+     * The test button shows only with the fake gateway, and never in production.
+     */
+    #[Computed]
+    public function canSimulate(): bool
+    {
+        return app(PaymentGateway::class) instanceof FakeGateway && ! app()->isProduction();
+    }
+
+    #[Computed]
+    public function listensLive(): bool
+    {
+        return config('broadcasting.default') === 'reverb' && filled(config('broadcasting.connections.reverb.key'));
     }
 
     /**
@@ -111,6 +169,124 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
         $this->amount = Money::format($amount, withPrefix: false);
     }
 
+    public function updatedMethodId(): void
+    {
+        // Codes are locked in once shown: another method waits until the
+        // code is paid, expires, or is cancelled.
+        if ($this->charge?->status === ChargeStatus::Pending) {
+            $this->methodId = (string) $this->charge->payment_method_id;
+        }
+
+        $this->resetErrorBag();
+    }
+
+    /**
+     * Ask the gateway for a QRIS code for the amount typed.
+     */
+    public function showQris(): void
+    {
+        $method = $this->method;
+        abort_unless($method instanceof PaymentMethod && $method->usesGateway(), 422);
+
+        $amount = Money::parse($this->amount);
+
+        if ($amount <= 0) {
+            $this->addError('amount', __('payments.amount_required'));
+
+            return;
+        }
+
+        if ($amount > $this->outstanding) {
+            $this->addError('amount', __('qris.more_than_owed'));
+
+            return;
+        }
+
+        try {
+            $charge = app(QrisPayments::class)->start($this->order, $method, auth()->user(), $amount);
+        } catch (GatewayException $exception) {
+            $this->addError('amount', $exception->getMessage());
+
+            return;
+        }
+
+        $this->chargeId = $charge->getKey();
+        unset($this->charge);
+    }
+
+    /**
+     * Polled while a code is showing, and called when the websocket says the
+     * code changed. Moves on to the receipt once the bill is paid.
+     */
+    public function checkCharge(bool $force = false): void
+    {
+        $charge = $this->charge;
+
+        if (! $charge instanceof PaymentCharge) {
+            return;
+        }
+
+        $charge = app(QrisPayments::class)->check($charge, $force);
+        unset($this->charge);
+
+        if ($charge->status !== ChargeStatus::Paid) {
+            return;
+        }
+
+        $this->order->refresh()->load(['items', 'payments']);
+        unset($this->outstanding, $this->change);
+        $this->chargeId = null;
+
+        if ($this->order->outstanding() === 0) {
+            $this->redirectRoute('pos.receipt', ['order' => $this->order], navigate: true);
+
+            return;
+        }
+
+        $this->setAmount($this->order->outstanding());
+
+        Flux::toast(variant: 'success', text: __('qris.paid', ['amount' => Money::format($charge->paid_amount)]).' '.__('payments.partial', [
+            'amount' => Money::format($this->order->outstanding()),
+        ]));
+    }
+
+    public function cancelCharge(): void
+    {
+        if ($this->charge instanceof PaymentCharge) {
+            app(QrisPayments::class)->cancel($this->charge);
+        }
+
+        $this->chargeId = null;
+        unset($this->charge);
+
+        Flux::toast(text: __('qris.cancelled'));
+    }
+
+    /**
+     * Put the code aside once it expired or failed, to make a new one.
+     */
+    public function dismissCharge(): void
+    {
+        abort_if($this->charge?->status === ChargeStatus::Pending, 409);
+
+        $this->chargeId = null;
+        unset($this->charge);
+    }
+
+    /**
+     * Fake gateway only: play the guest paying, through the same signed
+     * webhook path a real gateway uses.
+     */
+    public function simulatePay(): void
+    {
+        abort_unless($this->canSimulate && $this->charge instanceof PaymentCharge, 403);
+
+        $fake = app(PaymentGateway::class);
+        app(ReceiveWebhook::class)->handle($fake->name(), $fake->pay($this->charge));
+
+        $this->checkCharge(force: true);
+    }
+
     /**
      * Put the typed amount against the bill.
      */
@@ -122,10 +298,21 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
             return;
         }
 
-        $this->validate(
-            ['reference' => [$method->needs_reference ? 'required' : 'nullable', 'string', 'max:60']],
-            attributes: ['reference' => __('payments.reference')],
-        );
+        if ($method->usesGateway()) {
+            $this->showQris();
+
+            return;
+        }
+
+        abort_if($this->charge?->status === ChargeStatus::Pending, 409, __('qris.other_methods_locked'));
+
+        $this->validate([
+            'reference' => [$method->needs_reference ? 'required' : 'nullable', 'string', 'max:60'],
+            'proof' => ['nullable', 'image', 'max:5120'],
+        ], attributes: [
+            'reference' => __('payments.reference'),
+            'proof' => __('qris.proof'),
+        ]);
 
         $tendered = Money::parse($this->amount);
 
@@ -135,6 +322,12 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
             return;
         }
 
+        // Only a static QRIS payment keeps a photo; anything else would be
+        // a guest's screen stored for no reason.
+        $proofPath = $method->isStaticQris() && $this->proof !== null
+            ? $this->proof->store('payment-proofs/'.now()->format('Y/m'), 'local')
+            : null;
+
         app(TakePayment::class)->handle(
             $this->order,
             $method,
@@ -142,7 +335,10 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
             $tendered,
             $tendered,
             $this->reference === '' ? null : $this->reference,
+            proofPath: $proofPath ?: null,
         );
+
+        $this->reset('proof');
 
         $this->order->refresh();
         unset($this->outstanding, $this->change);
@@ -213,6 +409,9 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
             </flux:callout>
         @endunless
 
+        @php($charge = $this->charge)
+        @php($codeShowing = $charge?->status === \App\Domain\Sales\Enums\ChargeStatus::Pending)
+
         {{-- Methods as tiles: a cashier picks by shape, not by reading. --}}
         <div class="pay-methods" role="group" aria-label="{{ __('payments.method') }}">
             @foreach ($this->methods as $method)
@@ -221,59 +420,140 @@ new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
                     wire:key="pm-{{ $method->id }}"
                     wire:click="$set('methodId', '{{ $method->id }}')"
                     @class(['pay-method', 'pay-method-on' => $methodId === $method->id])
+                    @disabled($codeShowing && $methodId !== $method->id)
+                    @if ($method->usesGateway()) data-requires-online @endif
                     data-test="payment-method"
                 >{{ $method->name }}</button>
             @endforeach
         </div>
 
-        <flux:input
-            wire:model.live.debounce.200ms="amount"
-            inputmode="numeric"
-            class="pay-amount"
-            :label="__('payments.amount')"
-            data-test="pay-amount"
-        />
+        @if ($charge !== null)
+            {{-- A dynamic QRIS code. The money is on the bill only once the
+                 gateway confirms it, never because a phone was held up. --}}
+            <div
+                class="qris-panel"
+                x-data="qrisCode({ qr: @js($codeShowing ? $charge->qr_string : null), outlet: @js($order->outlet_id), charge: @js($charge->id), live: @js($this->listensLive) })"
+                @if ($codeShowing) wire:poll.4s="checkCharge" @endif
+                data-test="qris-panel"
+                data-status="{{ $charge->status->value }}"
+            >
+                @if ($codeShowing)
+                    <p class="qris-title">{{ __('qris.scan') }}</p>
+                    <x-money :amount="$charge->amount" class="qris-amount" data-test="qris-amount" />
 
-        @if ($this->method?->opens_cash_drawer)
-            <div class="pay-quick" role="group" aria-label="{{ __('payments.quick') }}">
-                <flux:button size="sm" variant="subtle" wire:click="setAmount({{ $this->outstanding }})">
-                    {{ __('payments.exact') }}
-                </flux:button>
+                    <div class="qris-code" x-ref="code" role="img" aria-label="{{ __('qris.scan') }}" wire:ignore></div>
 
-                @foreach ($this->quickAmounts as $quick)
-                    <flux:button size="sm" variant="subtle" wire:click="setAmount({{ $quick }})" data-test="quick-amount">
-                        {{ \App\Support\Money::format($quick, withPrefix: false) }}
-                    </flux:button>
-                @endforeach
+                    <p class="qris-waiting" role="status" aria-live="polite">
+                        <span class="qris-dot" aria-hidden="true"></span>
+                        {{ __('qris.waiting') }}
+                    </p>
+                    <p class="qris-meta">{{ __('qris.expires_in', ['time' => $charge->expires_at?->format('H:i')]) }}</p>
+                    <p class="qris-meta">{{ __('qris.live_hint') }}</p>
+
+                    <div class="pay-actions">
+                        <flux:button variant="subtle" class="pos-action" wire:click="cancelCharge" data-test="qris-cancel">{{ __('qris.cancel') }}</flux:button>
+                        <flux:button class="pos-action" wire:click="checkCharge(true)" data-test="qris-check">{{ __('qris.check') }}</flux:button>
+                    </div>
+
+                    @if ($this->canSimulate)
+                        <div class="qris-test">
+                            <flux:text class="text-sm">{{ __('qris.simulate_hint') }}</flux:text>
+                            <flux:button size="sm" variant="primary" icon="beaker" wire:click="simulatePay" data-test="qris-simulate">{{ __('qris.simulate') }}</flux:button>
+                        </div>
+                    @endif
+                @else
+                    <flux:callout :variant="$charge->status === \App\Domain\Sales\Enums\ChargeStatus::Failed ? 'danger' : 'warning'" icon="exclamation-triangle">
+                        <flux:callout.text>
+                            {{ $charge->status === \App\Domain\Sales\Enums\ChargeStatus::Expired ? __('qris.expired') : $charge->status->label() }}
+                            @if ($charge->failure_reason)
+                                <span class="block">{{ $charge->failure_reason }}</span>
+                            @endif
+                        </flux:callout.text>
+                    </flux:callout>
+
+                    <flux:button class="pos-action" wire:click="dismissCharge" data-test="qris-dismiss">{{ __('qris.new_code') }}</flux:button>
+                @endif
             </div>
-        @endif
-
-        @if ($this->method?->needs_reference)
+        @else
             <flux:input
-                wire:model="reference"
-                :label="__('payments.reference')"
-                :placeholder="__('payments.reference_placeholder')"
-                data-test="pay-reference"
+                wire:model.live.debounce.200ms="amount"
+                inputmode="numeric"
+                class="pay-amount"
+                :label="$this->method?->usesGateway() ? __('qris.amount') : __('payments.amount')"
+                data-test="pay-amount"
             />
-        @endif
 
-        @if ($this->change > 0)
-            <div class="pay-change" data-test="change">
-                <span>{{ __('payments.change') }}</span>
-                <x-money :amount="$this->change" />
-            </div>
-        @endif
+            @if ($this->method?->opens_cash_drawer)
+                <div class="pay-quick" role="group" aria-label="{{ __('payments.quick') }}">
+                    <flux:button size="sm" variant="subtle" wire:click="setAmount({{ $this->outstanding }})">
+                        {{ __('payments.exact') }}
+                    </flux:button>
 
-        <div class="pay-actions">
-            @if ($order->payments->isNotEmpty())
-                <flux:button variant="subtle" class="pos-action" wire:click="voidLast" data-test="void-last">
-                    {{ __('payments.void_last') }}
-                </flux:button>
+                    @foreach ($this->quickAmounts as $quick)
+                        <flux:button size="sm" variant="subtle" wire:click="setAmount({{ $quick }})" data-test="quick-amount">
+                            {{ \App\Support\Money::format($quick, withPrefix: false) }}
+                        </flux:button>
+                    @endforeach
+                </div>
             @endif
 
-            <flux:button variant="primary" class="pos-action" wire:click="take" data-test="settle">
-                {{ __('payments.settle') }}
-            </flux:button>
-        </div>
+            @if ($this->method?->isStaticQris())
+                <flux:text class="text-sm" data-test="static-qris-hint">{{ __('qris.static_hint') }}</flux:text>
+            @endif
+
+            @if ($this->method?->needs_reference)
+                <flux:input
+                    wire:model="reference"
+                    :label="__('payments.reference')"
+                    :placeholder="__('payments.reference_placeholder')"
+                    data-test="pay-reference"
+                />
+            @endif
+
+            @if ($this->method?->isStaticQris())
+                <flux:input
+                    type="file"
+                    wire:model="proof"
+                    accept="image/*"
+                    capture="environment"
+                    :label="__('qris.proof')"
+                    :description="__('qris.proof_hint')"
+                    data-test="pay-proof"
+                />
+            @endif
+
+            @if ($this->method?->usesGateway())
+                <flux:text class="text-sm qris-offline-note" data-test="qris-online-note">{{ __('qris.offline') }}</flux:text>
+            @endif
+
+            @if ($this->change > 0)
+                <div class="pay-change" data-test="change">
+                    <span>{{ __('payments.change') }}</span>
+                    <x-money :amount="$this->change" />
+                </div>
+            @endif
+
+            <div class="pay-actions">
+                @if ($order->payments->isNotEmpty() && $order->payments->sortByDesc('paid_at')->first()?->payment_charge_id === null)
+                    <flux:button variant="subtle" class="pos-action" wire:click="voidLast" data-test="void-last">
+                        {{ __('payments.void_last') }}
+                    </flux:button>
+                @endif
+
+                @if ($this->method?->usesGateway())
+                    <flux:button variant="primary" class="pos-action" icon="qr-code" wire:click="showQris" wire:loading.attr="disabled" data-test="qris-show">
+                        {{ __('qris.show_code', ['amount' => \App\Support\Money::format(\App\Support\Money::parse($amount))]) }}
+                    </flux:button>
+                @else
+                    <flux:button variant="primary" class="pos-action" wire:click="take" wire:loading.attr="disabled" wire:target="take,proof" data-test="settle">
+                        {{ __('payments.settle') }}
+                    </flux:button>
+                @endif
+            </div>
+        @endif
+
+        @if ($this->listensLive)
+            @vite('resources/js/echo.js')
+        @endif
     </section>
 </div>

@@ -96,10 +96,10 @@ class DeductSaleStock
             fn (OrderItem $item): bool => $item->status === OrderItemStatus::Voided || $item->product_variant_id === null,
         );
 
-        return $this->usageFor($lines->map(fn (OrderItem $item): array => [
+        return $this->usageFor(array_values($lines->map(fn (OrderItem $item): array => [
             'variant_id' => (string) $item->product_variant_id,
             'quantity' => (float) $item->quantity,
-        ])->values()->all());
+        ])->all()));
     }
 
     /**

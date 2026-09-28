@@ -8,8 +8,17 @@ use App\Domain\Identity\Models\Outlet;
 use App\Domain\Sync\Enums\SyncStatus;
 use App\Models\DomainModel;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property SyncStatus $status
+ * @property array<string, mixed> $payload
+ * @property array<string, mixed>|null $result
+ * @property CarbonImmutable|null $client_created_at
+ * @property CarbonImmutable|null $processed_at
+ * @property CarbonImmutable|null $resolved_at
+ */
 class SyncOperation extends DomainModel
 {
     protected function casts(): array

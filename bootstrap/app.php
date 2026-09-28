@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [SetLocale::class]);
 
+        // The payment gateway cannot hold a CSRF token; its webhooks prove
+        // themselves with a signature instead.
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         $middleware->alias([
             'outlet' => EnsureOutletSelected::class,
             'unlocked' => EnsureScreenUnlocked::class,

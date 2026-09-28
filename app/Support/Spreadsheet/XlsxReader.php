@@ -141,12 +141,12 @@ final class XlsxReader
         ksort($rows);
 
         // Keep the spreadsheet's own row numbers, so an error can say "row 7".
-        return array_values(array_map(fn (array $row): array => $row, $this->fillGaps($rows)));
+        return $this->fillGaps($rows);
     }
 
     /**
-     * @param  array<int, list<mixed>>  $rows
-     * @return list<list<mixed>>
+     * @param  array<int, array<int, int|float|string|bool|null>>  $rows
+     * @return list<list<int|float|string|bool|null>>
      */
     private function fillGaps(array $rows): array
     {
@@ -158,7 +158,7 @@ final class XlsxReader
         $last = max(array_keys($rows));
 
         for ($number = 1; $number <= $last; $number++) {
-            $filled[] = $rows[$number] ?? [];
+            $filled[] = array_values($rows[$number] ?? []);
         }
 
         return $filled;

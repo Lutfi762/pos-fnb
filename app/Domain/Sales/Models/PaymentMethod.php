@@ -11,6 +11,15 @@ class PaymentMethod extends DomainModel
 {
     use SoftDeletes;
 
+    // The cashier keys a reference by hand: cards, transfers.
+    public const MANUAL = 'manual';
+
+    // The server asks the gateway for a QRIS code and waits for it to be paid.
+    public const GATEWAY_QRIS = 'gateway_qris';
+
+    // The printed QRIS standee: no gateway, a manager checks it later.
+    public const STATIC_QRIS = 'static_qris';
+
     protected function casts(): array
     {
         return [
@@ -20,6 +29,16 @@ class PaymentMethod extends DomainModel
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function usesGateway(): bool
+    {
+        return $this->mode === self::GATEWAY_QRIS;
+    }
+
+    public function isStaticQris(): bool
+    {
+        return $this->mode === self::STATIC_QRIS;
     }
 
     /**

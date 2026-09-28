@@ -7,9 +7,14 @@ namespace App\Domain\Sales\Models;
 use App\Domain\Identity\Models\Outlet;
 use App\Models\DomainModel;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property CarbonImmutable $opened_at
+ * @property CarbonImmutable|null $closed_at
+ */
 class CashierShift extends DomainModel
 {
     protected function casts(): array

@@ -36,6 +36,7 @@ class TakePayment
         ?int $tendered = null,
         ?string $reference = null,
         ?CarbonInterface $paidAt = null,
+        ?string $proofPath = null,
     ): Payment {
         abort_unless($order->status->isEditable(), 409, __('pos.order_closed'));
         abort_unless($amount > 0, 422, __('payments.amount_required'));
@@ -48,7 +49,7 @@ class TakePayment
         // moment the tablet found a connection again.
         $paidAt ??= now();
 
-        return DB::transaction(function () use ($order, $method, $cashier, $amount, $tendered, $reference, $paidAt): Payment {
+        return DB::transaction(function () use ($order, $method, $cashier, $amount, $tendered, $reference, $paidAt, $proofPath): Payment {
             // Re-read under a lock: two terminals must never both close the bill.
             $order = Order::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
 
@@ -73,6 +74,11 @@ class TakePayment
                 'change' => $change,
                 'fee_amount' => $method->feeFor($applied),
                 'reference' => $reference,
+                'proof_path' => $proofPath,
+
+                // A printed QRIS standee tells nobody it was paid: a manager
+                // checks these against the bank statement later.
+                'verification' => $method->isStaticQris() ? Payment::UNVERIFIED : null,
                 'status' => self::STATUS_CAPTURED,
                 'user_id' => $cashier->getKey(),
                 'paid_at' => $paidAt,
@@ -112,6 +118,10 @@ class TakePayment
         if (! $payment instanceof Payment) {
             return;
         }
+
+        // Money a gateway confirmed has left the guest's account. Taking it
+        // off the bill here would lose it; it goes back as a refund.
+        abort_if($payment->payment_charge_id !== null, 409, __('qris.cannot_void'));
 
         DB::transaction(function () use ($order, $payment): void {
             $order->update([

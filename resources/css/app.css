@@ -51,6 +51,9 @@
     --border-strong: #b9c4bc;
     --overlay: rgb(16 27 24 / 0.45);
 
+    /* Scannable codes stay dark on white in both themes. */
+    --code-paper: #ffffff;
+
     /* Motion */
     --dur-fast: 120ms;
     --dur-base: 180ms;

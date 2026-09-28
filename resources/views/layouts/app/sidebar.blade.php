@@ -45,6 +45,12 @@
                         </flux:sidebar.item>
                     @endif
 
+                    @if ($role?->managesOutlet())
+                        <flux:sidebar.item icon="qr-code" :href="route('payments.review')" :current="request()->routeIs('payments.*')" wire:navigate data-test="nav-payments-review">
+                            {{ __('qris.review.nav') }}
+                        </flux:sidebar.item>
+                    @endif
+
                     @if ($role?->managesStock())
                         <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.index')" wire:navigate>
                             {{ __('inventory.title') }}

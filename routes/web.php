@@ -3,12 +3,20 @@
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\ScreenLock;
 use App\Http\Controllers\CatalogImportTemplateController;
+use App\Http\Controllers\GatewayWebhookController;
 use App\Http\Controllers\OfflineController;
+use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\SyncOperationController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+
+// The payment gateway reporting a paid QRIS code. No session, no CSRF: the
+// request proves itself with the gateway's signature.
+Route::post('webhooks/payments/{provider}', GatewayWebhookController::class)
+    ->middleware('throttle:240,1')
+    ->name('webhooks.payments');
 
 // Shared devices: language follows the session, not the account.
 Route::post('locale/{locale}', function (string $locale) {
@@ -90,6 +98,8 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
 
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
+        Route::livewire('payments/review', 'pages::payments.review')->name('payments.review');
+        Route::get('payments/{payment}/proof', PaymentProofController::class)->name('payments.proof');
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');
         Route::get('catalog/import/template', CatalogImportTemplateController::class)->name('catalog.import.template');
         Route::livewire('catalog/create', 'pages::catalog.edit')->name('catalog.create');

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Sales\Gateway\FakeGateway;
+use App\Domain\Sales\Gateway\PaymentGateway;
+use App\Domain\Sales\Gateway\XenditGateway;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -18,7 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One gateway per install, chosen in config/payments.php.
+        $this->app->singleton(PaymentGateway::class, fn (): PaymentGateway => match (config('payments.gateway')) {
+            'xendit' => new XenditGateway((array) config('payments.xendit')),
+            default => new FakeGateway((array) config('payments.fake')),
+        });
     }
 
     /**

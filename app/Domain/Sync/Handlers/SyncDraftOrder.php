@@ -202,7 +202,10 @@ class SyncDraftOrder implements SyncHandler
             }
         }
 
-        abort_unless(count($rows) === count($ids), 422, __('sync.modifier_invalid'));
+        // An id that belongs to no group on this product was not rung up.
+        if (count($rows) !== count(array_unique($ids))) {
+            abort(422, __('sync.modifier_invalid'));
+        }
 
         return $rows;
     }

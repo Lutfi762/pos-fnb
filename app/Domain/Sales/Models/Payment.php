@@ -10,6 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends DomainModel
 {
+    // Static QRIS: waiting for a manager to find it on the bank statement.
+    public const UNVERIFIED = 'unverified';
+
+    public const VERIFIED = 'verified';
+
+    // The manager could not find the money.
+    public const REJECTED = 'rejected';
+
     protected function casts(): array
     {
         return [
@@ -17,8 +25,28 @@ class Payment extends DomainModel
             'tendered' => 'integer',
             'change' => 'integer',
             'fee_amount' => 'integer',
+            'settled_amount' => 'integer',
+            'settled_fee' => 'integer',
             'paid_at' => 'datetime',
+            'verified_at' => 'datetime',
+            'settled_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return BelongsTo<PaymentCharge, $this>
+     */
+    public function charge(): BelongsTo
+    {
+        return $this->belongsTo(PaymentCharge::class, 'payment_charge_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function verifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 
     /**

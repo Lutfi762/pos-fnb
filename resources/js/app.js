@@ -1,4 +1,5 @@
 import { installOffline } from './offline';
+import { qrisCode } from './qris';
 
 /*
  * The app keeps selling when the connection drops. The service worker caches
@@ -6,3 +7,7 @@ import { installOffline } from './offline';
  * goes to the server, so a stale page can never pass for a live one.
  */
 installOffline();
+
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('qrisCode', qrisCode);
+});

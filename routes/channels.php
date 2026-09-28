@@ -14,3 +14,9 @@ Broadcast::channel('App.Models.User.{id}', function (User $user, string $id): bo
 Broadcast::channel('outlet.{outletId}.kitchen', function (User $user, string $outletId): bool {
     return $user->is_active && $user->canAccessOutlet($outletId);
 });
+
+// QRIS codes paid or expired, so the till showing one can move on. Same
+// people as the board: whoever may work at the outlet.
+Broadcast::channel('outlet.{outletId}.payments', function (User $user, string $outletId): bool {
+    return $user->is_active && $user->canAccessOutlet($outletId);
+});

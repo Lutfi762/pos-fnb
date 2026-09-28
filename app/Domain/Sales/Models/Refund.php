@@ -57,6 +57,16 @@ class Refund extends DomainModel
     }
 
     /**
+     * The QRIS code the money goes back through, when it goes back that way.
+     *
+     * @return BelongsTo<PaymentCharge, $this>
+     */
+    public function charge(): BelongsTo
+    {
+        return $this->belongsTo(PaymentCharge::class, 'payment_charge_id');
+    }
+
+    /**
      * @return BelongsTo<CashierShift, $this>
      */
     public function shift(): BelongsTo

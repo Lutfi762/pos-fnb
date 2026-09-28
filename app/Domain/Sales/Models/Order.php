@@ -9,6 +9,7 @@ use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Enums\OrderType;
 use App\Models\DomainModel;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property OrderStatus $status
  * @property OrderType $type
+ * @property CarbonImmutable|null $paid_at
  */
 class Order extends DomainModel
 {
@@ -110,6 +112,16 @@ class Order extends DomainModel
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * QRIS codes shown for this bill, paid or not.
+     *
+     * @return HasMany<PaymentCharge, $this>
+     */
+    public function charges(): HasMany
+    {
+        return $this->hasMany(PaymentCharge::class);
     }
 
     /**

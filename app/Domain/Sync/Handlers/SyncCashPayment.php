@@ -37,7 +37,7 @@ class SyncCashPayment implements SyncHandler
     {
         $order = $this->order($context, $payload);
 
-        $method = PaymentMethod::query()->where('is_active', true)->findOrFail($payload['payment_method_id']);
+        $method = PaymentMethod::query()->where('is_active', true)->whereKey($payload['payment_method_id'])->firstOrFail();
 
         abort_unless($method->type === 'cash', 422, __('sync.cash_only'));
 

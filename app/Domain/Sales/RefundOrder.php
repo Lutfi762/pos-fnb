@@ -35,6 +35,7 @@ class RefundOrder
         private readonly DeductSaleStock $recipes,
         private readonly ShiftRegister $shifts,
         private readonly Audit $audit,
+        private readonly QrisPayments $qris,
     ) {}
 
     /**
@@ -61,7 +62,7 @@ class RefundOrder
         );
 
         return DB::transaction(function () use ($order, $requester, $approver, $quantities, $reason, $restock, $method, $at): Refund {
-            $order = Order::query()->with(['items.refundItems', 'outlet'])->lockForUpdate()->findOrFail($order->getKey());
+            $order = Order::query()->with(['items.refundItems', 'outlet'])->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
 
             abort_unless($order->status === OrderStatus::Paid, 409, __('refunds.not_paid'));
 
@@ -75,6 +76,9 @@ class RefundOrder
                 'outlet_id' => $order->outlet_id,
                 'cashier_shift_id' => $this->shifts->current($order->outlet, $requester)?->getKey(),
                 'payment_method_id' => $method->getKey(),
+                'payment_charge_id' => null,
+                'gateway_reference' => null,
+                'gateway_status' => null,
                 'method_name' => $method->name,
                 'user_id' => $requester->getKey(),
                 'approved_by' => $approver->getKey(),
@@ -85,6 +89,13 @@ class RefundOrder
             ]);
 
             $this->writeItems($refund, $lines, $amount, $netSelected);
+
+            // Back through the gateway, to the wallet it came from. If the
+            // gateway says no, nothing here is kept: the cashier can pick
+            // cash instead.
+            if ($method->usesGateway()) {
+                $this->qris->refund($refund, $order, trim($reason));
+            }
 
             $order->update(['refunded_total' => $order->refunded_total + $amount]);
 
@@ -97,6 +108,7 @@ class RefundOrder
                 'amount' => $amount,
                 'restock' => $restock,
                 'method' => $method->name,
+                'gateway_reference' => $refund->gateway_reference,
             ], trim($reason), $requester, $approver);
 
             return $refund->load('items');
@@ -198,7 +210,7 @@ class RefundOrder
     {
         $left = $amount;
 
-        foreach (array_values($lines) as $index => $line) {
+        foreach ($lines as $index => $line) {
             $share = $index === count($lines) - 1
                 ? $left
                 : (int) round($amount * $line['net'] / max(1, $net));

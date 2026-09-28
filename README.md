@@ -58,6 +58,87 @@ Stasiun (`bar` atau `kitchen`) dan target waktu saji diatur per kategori di
 lewat `products.station`. Nilai itu disalin ke baris pesanan saat dikirim, jadi
 mengubah kategori tidak memindahkan tiket yang sudah jalan.
 
+## QRIS
+
+Ada dua jenis QRIS di layar pembayaran:
+
+- **QRIS** (dinamis, `payment_methods.mode = gateway_qris`): server meminta kode
+  baru ke gateway untuk nominal yang diketik kasir, lalu menunggu konfirmasi.
+  Uang baru masuk bill setelah gateway bilang lunas, lewat webhook atau lewat
+  pengecekan status tiap beberapa detik. Bisa dipakai untuk sebagian bill
+  (split dengan tunai).
+- **QRIS Statis** (`static_qris`): stiker QRIS di meja kasir. Kasir mengisi
+  referensi dari layar tamu dan boleh memotret buktinya. Manajer mencocokkan
+  dengan mutasi rekening di **Cek pembayaran** (`/payments/review`).
+
+Migrasi Fase 3 mengubah metode QRIS lama (`type = qris`) menjadi QRIS statis,
+karena tanpa gateway memang begitulah cara kerjanya. Setelah gateway siap,
+ubah mode metode QRIS ke `gateway_qris` (atau jalankan ulang
+`php artisan db:seed --class=PaymentMethodSeeder`).
+
+QRIS dinamis butuh internet. Kasir offline (`/pos/offline`) hanya menerima tunai.
+
+### Mode uji tanpa akun (bawaan)
+
+```
+PAYMENT_GATEWAY=fake
+```
+
+Gateway palsu menerbitkan kode yang tampak seperti QRIS. Di layar pembayaran ada
+tombol **Simulasikan tamu membayar** (hanya di luar produksi) yang mengirim
+webhook bertanda tangan lewat jalur yang sama dengan gateway sungguhan.
+
+### QRIS dengan Xendit
+
+1. Buat akun Xendit, aktifkan mode **Test**, lalu buat *Secret API Key* dengan
+   izin tulis untuk QR Codes dan izin baca untuk Transactions.
+2. Isi `.env`:
+
+   ```
+   PAYMENT_GATEWAY=xendit
+   XENDIT_SECRET_KEY=xnd_development_...
+   XENDIT_WEBHOOK_TOKEN=...   # Settings > Webhooks > Verification token
+   QRIS_EXPIRY_MINUTES=10
+   ```
+
+3. Di dashboard Xendit, arahkan webhook **QR Code paid** ke
+   `https://<domain-anda>/webhooks/payments/xendit`.
+4. Jalankan antrean supaya webhook diproses: `php artisan queue:work`.
+   Kalau antrean mati, pembayaran tetap terkonfirmasi lewat pengecekan status
+   dari layar kasir; hanya baris webhook yang tertinggal berstatus `received`.
+5. Jalankan scheduler (`php artisan schedule:work`, atau Task Scheduler di
+   Windows) untuk rekonsiliasi settlement otomatis tiap pagi pukul 06.10.
+   Manual: `php artisan meja:reconcile-settlements 2026-09-27`.
+
+Daftar cek sebelum shift pertama dengan Xendit (kode ini ditulis dari dokumentasi
+API `2022-07-31`, belum diuji dengan akun sandbox sungguhan):
+
+- Buat kode Rp1.500, bayar lewat simulator Xendit, pastikan bill lunas dan baris
+  `gateway_webhooks` berstatus `processed`.
+- Kirim ulang webhook yang sama dari dashboard: tidak boleh ada pembayaran ganda.
+- Biarkan satu kode kedaluwarsa, lalu refund sebagian satu pembayaran QRIS dari
+  layar struk.
+- Jalankan `meja:reconcile-settlements` untuk hari itu dan periksa hasilnya di
+  **Cek pembayaran**.
+
+### Webhook di laptop (Laragon)
+
+Xendit tidak bisa menjangkau `http://meja.test`. Untuk mencoba webhook dari
+laptop, buka terowongan HTTPS dan pakai alamatnya di dashboard Xendit:
+
+```bash
+# pilih salah satu
+cloudflared tunnel --url http://meja.test --http-host-header meja.test
+ngrok http --host-header=meja.test 80
+```
+
+Tanpa terowongan pun QRIS tetap jalan: layar pembayaran menanyakan status ke
+Xendit tiap `QRIS_STATUS_CHECK_SECONDS` (bawaan 10 detik). Webhook hanya
+membuatnya lebih cepat.
+
+Kalau `BROADCAST_CONNECTION=reverb` dan Reverb berjalan, layar pembayaran juga
+langsung pindah ke struk begitu webhook masuk.
+
 ## Gerbang sebelum commit
 
 ```bash

@@ -35,13 +35,13 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi dan commit `feat: refund dengan persetujuan, log waste, dan impor menu`
 
 ## Fase 3 — QRIS dan gateway
-- [ ] PaymentGateway, driver gateway pilihan dan fake driver
-- [ ] QRIS dinamis, Reverb, cek/batal, split payment
-- [ ] Webhook signature, raw payload, idempoten, queue
-- [ ] QRIS statis dengan bukti dan rekonsiliasi manajer
-- [ ] Rekonsiliasi settlement; refund QRIS; nonaktif offline; README tunnel
-- [ ] Test webhook, signature, expiry, split, refund
-- [ ] Validasi dan commit `feat: pembayaran QRIS dengan webhook idempoten dan rekonsiliasi`
+- [x] PaymentGateway, driver Xendit (API QR Codes 2022-07-31) dan fake driver
+- [x] QRIS dinamis, Reverb, cek/batal, split payment
+- [x] Webhook signature, raw payload, idempoten, queue
+- [x] QRIS statis dengan bukti dan rekonsiliasi manajer
+- [x] Rekonsiliasi settlement; refund QRIS; nonaktif offline; README tunnel
+- [x] Test webhook, signature, expiry, split, refund
+- [x] Validasi dan commit `feat: pembayaran QRIS dengan webhook idempoten dan rekonsiliasi`
 
 ## Fase 4 — Hari operasional dan ringkasan
 - [ ] Catat semua query tanggal di bawah ini setelah audit
@@ -90,6 +90,10 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 2 selesai 2026-09-26. Refund di layar struk (/pos/{order}/receipt), waste di /stock/waste (dapur juga boleh), impor menu dari tombol di /catalog.
 - Ditemukan & diperbaiki di Fase 2: token warna `--color-base` bentrok dengan utilitas ukuran `text-base` Tailwind, sehingga semua `flux:heading size="lg"` berwarna hampir putih di mode terang. Token diganti `--color-canvas` (`bg-canvas`).
 - Ditemukan & diperbaiki di Fase 2: Livewire 4 tidak memuat ulang relasi model publik di request berikutnya; layar struk sekarang memuat ulang relasinya di `hydrate()`.
+- Fase 3 selesai 2026-09-28. QRIS dinamis di layar bayar, QRIS statis dengan foto bukti, halaman manajer /payments/review, webhook POST /webhooks/payments/{provider}, perintah `meja:reconcile-settlements` (terjadwal 06.10). Driver Xendit ditulis dari dokumentasi dan diuji dengan Http::fake; daftar cek sandbox ada di README.
+- Fase 3: `phpstan analyse` (level 7) sekarang bersih, termasuk temuan lama di Sync, DeductSaleStock, dan XlsxReader.
+- Fase 3: dependensi npm baru `qrcode-generator` (MIT, tanpa dependensi) untuk menggambar kode QRIS. Jalankan `npm install`.
+- Catatan untuk Fase 4: rekonsiliasi settlement masih memakai hari kalender (lihat `ReconcileSettlement::bounds`).
 - Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.
