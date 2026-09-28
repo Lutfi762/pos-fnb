@@ -51,4 +51,16 @@ return [
 
     'empty_heading' => 'Belum ada penjualan',
     'empty_description' => 'Pilih rentang tanggal lain atau mulai transaksi di kasir.',
+
+    'refunds' => 'Refund',
+    'refunded' => 'Dikembalikan',
+    'net_after_refunds' => 'Bersih setelah refund',
+    'waste' => 'Waste',
+    'business_day_hint' => 'Hari operasional mulai pukul :hour. Penjualan sebelum jam itu masuk hari sebelumnya.',
+
+    'rebuild' => [
+        'done' => ':days hari ringkasan dibangun ulang (:range).',
+        'redated' => ':outlet: :count transaksi pindah tanggal operasional.',
+        'unknown_outlet' => 'Outlet dengan kode :code tidak ditemukan.',
+    ],
 ];

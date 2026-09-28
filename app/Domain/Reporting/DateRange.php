@@ -9,11 +9,13 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 
 /**
- * A stretch of days in the outlet's own timezone.
+ * A stretch of trading days.
  *
  * Reports are read by people who think in opening hours, not in UTC. The
- * boundaries are therefore inclusive whole days: "1 to 7 March" means from
- * the first minute of the 1st to the last minute of the 7th.
+ * range is therefore a set of whole trading days, inclusive at both ends,
+ * matched against the business_date stamped on every bill, refund, and
+ * stock movement. When a trading day starts is the outlet's business
+ * (BusinessCalendar); a range only knows which days it covers.
  */
 final readonly class DateRange
 {
@@ -36,9 +38,30 @@ final readonly class DateRange
             : new self($start, $end);
     }
 
-    public static function fromPreset(Preset $preset): self
+    /**
+     * @param  CarbonImmutable  $today  the outlet's current trading day
+     */
+    public static function fromPreset(Preset $preset, CarbonImmutable $today): self
     {
-        return $preset->range();
+        return $preset->range($today);
+    }
+
+    /**
+     * First trading day, as the database stores business dates.
+     */
+    public function fromDate(): string
+    {
+        return $this->from->toDateString();
+    }
+
+    public function toDate(): string
+    {
+        return $this->to->toDateString();
+    }
+
+    public function contains(string $date): bool
+    {
+        return $date >= $this->fromDate() && $date <= $this->toDate();
     }
 
     /**

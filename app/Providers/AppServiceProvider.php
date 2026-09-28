@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Sales\Gateway\FakeGateway;
 use App\Domain\Sales\Gateway\PaymentGateway;
 use App\Domain\Sales\Gateway\XenditGateway;
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Outlet clocks are read once per request or job, then reused.
+        $this->app->scoped(BusinessCalendar::class);
+
         // One gateway per install, chosen in config/payments.php.
         $this->app->singleton(PaymentGateway::class, fn (): PaymentGateway => match (config('payments.gateway')) {
             'xendit' => new XenditGateway((array) config('payments.xendit')),

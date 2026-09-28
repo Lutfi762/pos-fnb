@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\Models\Outlet;
 use App\Domain\Reporting\DateRange;
@@ -57,7 +58,7 @@ new #[Layout('layouts::app')] #[Title('Laporan')] class extends Component {
             }
         }
 
-        return (Preset::tryFrom($this->preset) ?? Preset::Today)->range();
+        return (Preset::tryFrom($this->preset) ?? Preset::Today)->range(app(BusinessCalendar::class)->today($this->outlet));
     }
 
     #[Computed]

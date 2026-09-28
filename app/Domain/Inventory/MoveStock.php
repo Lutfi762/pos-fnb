@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Inventory;
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Identity\Models\Outlet;
 use App\Domain\Inventory\Enums\StockMovementType;
 use App\Domain\Inventory\Models\InventoryItem;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
+use App\Domain\Reporting\DailySummaries;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +25,11 @@ use Illuminate\Support\Facades\DB;
  */
 class MoveStock
 {
+    public function __construct(
+        private readonly BusinessCalendar $calendar,
+        private readonly DailySummaries $summaries,
+    ) {}
+
     /**
      * Record one movement and return it with the balance it left behind.
      *
@@ -58,6 +65,14 @@ class MoveStock
 
             $level->update(['quantity' => $balance]);
 
+            $movedAt = $at ?? now();
+            $businessDate = $this->calendar->dateFor($outlet, $movedAt);
+
+            // Waste is on the daily summary; nothing else here is.
+            if ($type === StockMovementType::Waste) {
+                $this->summaries->touch($outlet->getKey(), $businessDate);
+            }
+
             return StockMovement::create([
                 'outlet_id' => $outlet->getKey(),
                 'inventory_item_id' => $item->getKey(),
@@ -72,7 +87,8 @@ class MoveStock
                 'reason' => $reason,
                 // When it happened on the floor, which for a sale rung up
                 // offline is earlier than when the server heard about it.
-                'moved_at' => $at ?? now(),
+                'moved_at' => $movedAt,
+                'business_date' => $businessDate,
             ]);
         });
     }

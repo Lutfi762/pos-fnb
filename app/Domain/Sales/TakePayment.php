@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Inventory\DeductSaleStock;
+use App\Domain\Reporting\DailySummaries;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\Models\Payment;
@@ -23,6 +25,11 @@ use Illuminate\Support\Facades\DB;
 class TakePayment
 {
     public const STATUS_CAPTURED = 'captured';
+
+    public function __construct(
+        private readonly BusinessCalendar $calendar,
+        private readonly DailySummaries $summaries,
+    ) {}
 
     /**
      * @param  int  $amount  What the guest is putting against the bill.
@@ -92,7 +99,14 @@ class TakePayment
             ] + ($paid >= $order->grand_total ? [
                 'status' => OrderStatus::Paid,
                 'paid_at' => $paidAt,
+
+                // The trading day the drawer counts it on, fixed once paid.
+                'business_date' => $this->calendar->dateFor($order->outlet_id, $paidAt),
             ] : []));
+
+            if ($order->status === OrderStatus::Paid) {
+                $this->summaries->touch($order->outlet_id, $order->business_date);
+            }
 
             // Settled in full: the dishes are made, so their ingredients go.
             if ($order->status === OrderStatus::Paid) {

@@ -49,6 +49,10 @@
                         <flux:sidebar.item icon="qr-code" :href="route('payments.review')" :current="request()->routeIs('payments.*')" wire:navigate data-test="nav-payments-review">
                             {{ __('qris.review.nav') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="cog-6-tooth" :href="route('outlet.settings')" :current="request()->routeIs('outlet.settings')" wire:navigate data-test="nav-outlet-settings">
+                            {{ __('outlet.settings.nav') }}
+                        </flux:sidebar.item>
                     @endif
 
                     @if ($role?->managesStock())

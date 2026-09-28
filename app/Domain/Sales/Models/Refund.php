@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Money given back on a settled bill, approved by a supervisor.
+ *
+ * @property string|null $business_date
  */
 class Refund extends DomainModel
 {

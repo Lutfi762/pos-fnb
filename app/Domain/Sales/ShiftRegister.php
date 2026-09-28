@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Identity\Models\Outlet;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Models\CashierShift;
@@ -25,6 +26,8 @@ use Illuminate\Support\Collection;
  */
 class ShiftRegister
 {
+    public function __construct(private readonly BusinessCalendar $calendar) {}
+
     /**
      * The shift this cashier currently has open at this outlet, if any.
      */
@@ -46,12 +49,15 @@ class ShiftRegister
      */
     public function open(Outlet $outlet, User $cashier, int $openingCash, ?CarbonInterface $at = null, ?string $clientKey = null): CashierShift
     {
+        $at ??= now();
+
         return $this->current($outlet, $cashier) ?? CashierShift::create([
             'outlet_id' => $outlet->getKey(),
             'user_id' => $cashier->getKey(),
             'client_shift_key' => $clientKey,
             'opening_cash' => max(0, $openingCash),
-            'opened_at' => $at ?? now(),
+            'opened_at' => $at,
+            'business_date' => $this->calendar->dateFor($outlet, $at),
         ]);
     }
 

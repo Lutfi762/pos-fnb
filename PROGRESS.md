@@ -44,14 +44,14 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi dan commit `feat: pembayaran QRIS dengan webhook idempoten dan rekonsiliasi`
 
 ## Fase 4 — Hari operasional dan ringkasan
-- [ ] Catat semua query tanggal di bawah ini setelah audit
-- [ ] Migration/backfill business date, timezone dan jam awal hari
-- [ ] BusinessDate terpusat dan DateRange business date
-- [ ] Semua laporan/dashboard filter business_date
-- [ ] daily_sales_summaries dan job pembaruan
-- [ ] Rebuild summaries idempoten dan setting outlet
-- [ ] Test batas hari/timezone/offline/total/rebuild
-- [ ] Validasi dan commit `fix: laporan berbasis hari operasional dan tabel ringkasan harian`
+- [x] Catat semua query tanggal di bawah ini setelah audit
+- [x] Migration/backfill business date, timezone dan jam awal hari
+- [x] BusinessDate terpusat (`BusinessCalendar`) dan DateRange business date
+- [x] Semua laporan/dashboard filter business_date
+- [x] daily_sales_summaries dan pembaruan (setelah commit, sinkron; tanpa worker)
+- [x] Rebuild summaries idempoten (`meja:rebuild-summaries`, opsi `--redate`) dan setting outlet (`/outlet/settings`)
+- [x] Test batas hari/timezone/offline/total/rebuild
+- [x] Validasi dan commit `fix: laporan berbasis hari operasional dan tabel ringkasan harian`
 
 ## Fase 5 — Dashboard
 - [ ] Widget KPI dan pembanding minggu lalu
@@ -76,11 +76,13 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [ ] UI kit local-only/hapus, README, backup/restore, deploy VPS, setting owner
 - [ ] Validasi dan commit `chore: penghalusan animasi, aksesibilitas, perbaikan bug, dan persiapan rilis`
 
-## Query tanggal yang harus dimigrasikan pada Fase 4
-- `app/Domain/Reporting/DateRange.php`: batas rentang, previous, dates memakai hari kalender.
-- `app/Domain/Reporting/Enums/Preset.php`: Today, Yesterday, Week, Month memakai hari kalender.
-- `app/Domain/Reporting/SalesReport.php`: `date(paid_at)` untuk grup harian; `paid_at` dan `closed_at` untuk filter.
-- `resources/views/pages/⚡dashboard.blade.php`: memakai `DateRange` dan `SalesReport` tersebut.
+## Query tanggal (dimigrasikan pada Fase 4)
+- `app/Domain/Reporting/DateRange.php`: sekarang rentang hari operasional (`fromDate()`/`toDate()`).
+- `app/Domain/Reporting/Enums/Preset.php`: dihitung dari hari operasional outlet (`BusinessCalendar::today`).
+- `app/Domain/Reporting/SalesReport.php`: ringkasan dan harian dari `daily_sales_summaries`; produk, metode bayar, dan shift memfilter `business_date`.
+- `resources/views/pages/⚡dashboard.blade.php`: preset memakai hari operasional outlet.
+- `app/Domain/Inventory/LogWaste.php` dan `/stock/waste`: filter `business_date`.
+- Tetap hari kalender, disengaja: rekonsiliasi settlement gateway (laporan gateway dipotong tengah malam), nomor bill, hitungan "hari ini" di halaman sinkronisasi.
 
 ## Catatan sesi
 - Fase 0 selesai. Fase 1 selesai 2026-09-26 (dikerjakan Claude Cowork).
@@ -93,7 +95,7 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 3 selesai 2026-09-28. QRIS dinamis di layar bayar, QRIS statis dengan foto bukti, halaman manajer /payments/review, webhook POST /webhooks/payments/{provider}, perintah `meja:reconcile-settlements` (terjadwal 06.10). Driver Xendit ditulis dari dokumentasi dan diuji dengan Http::fake; daftar cek sandbox ada di README.
 - Fase 3: `phpstan analyse` (level 7) sekarang bersih, termasuk temuan lama di Sync, DeductSaleStock, dan XlsxReader.
 - Fase 3: dependensi npm baru `qrcode-generator` (MIT, tanpa dependensi) untuk menggambar kode QRIS. Jalankan `npm install`.
-- Catatan untuk Fase 4: rekonsiliasi settlement masih memakai hari kalender (lihat `ReconcileSettlement::bounds`).
+- Fase 4 selesai 2026-09-28. Hari operasional per outlet (zona waktu + jam mulai, bawaan WIB 04.00) dicap ke orders, refunds, stock_movements, cashier_shifts. Ringkasan harian dibangun ulang setelah setiap bayar/refund/waste, dan dibangun sendiri saat laporan meminta hari yang belum ada.
 - Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.

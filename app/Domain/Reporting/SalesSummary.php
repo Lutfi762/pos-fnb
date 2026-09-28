@@ -23,7 +23,20 @@ final readonly class SalesSummary
         public int $serviceCharge = 0,
         public int $cost = 0,
         public int $guests = 0,
+        public int $refunds = 0,
+        public int $refunded = 0,
+        public int $refundedNet = 0,
+        public int $waste = 0,
     ) {}
+
+    /**
+     * Net sales less the net part of refunds given back in the same days.
+     * A refund is dated the day the money went back, not the day of the bill.
+     */
+    public function netAfterRefunds(): int
+    {
+        return $this->netSales - $this->refundedNet;
+    }
 
     /**
      * Net sales less the cost of the ingredients that went out the door.

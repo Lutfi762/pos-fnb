@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Sales;
 
 use App\Domain\Audit\Audit;
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Inventory\DeductSaleStock;
 use App\Domain\Inventory\Enums\StockMovementType;
 use App\Domain\Inventory\Models\InventoryItem;
 use App\Domain\Inventory\MoveStock;
+use App\Domain\Reporting\DailySummaries;
 use App\Domain\Sales\Enums\OrderItemStatus;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Models\Order;
@@ -36,6 +38,8 @@ class RefundOrder
         private readonly ShiftRegister $shifts,
         private readonly Audit $audit,
         private readonly QrisPayments $qris,
+        private readonly BusinessCalendar $calendar,
+        private readonly DailySummaries $summaries,
     ) {}
 
     /**
@@ -86,6 +90,10 @@ class RefundOrder
                 'reason' => trim($reason),
                 'restock' => $restock,
                 'refunded_at' => $at ?? now(),
+
+                // Today's trading day, whatever day the bill was: last week's
+                // report stays as it was.
+                'business_date' => $this->calendar->dateFor($order->outlet_id, $at ?? now()),
             ]);
 
             $this->writeItems($refund, $lines, $amount, $netSelected);
@@ -98,6 +106,7 @@ class RefundOrder
             }
 
             $order->update(['refunded_total' => $order->refunded_total + $amount]);
+            $this->summaries->touch($order->outlet_id, $refund->business_date);
 
             if ($restock) {
                 $this->restock($refund, $order, $lines, $requester);

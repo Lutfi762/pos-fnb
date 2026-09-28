@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Models;
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Identity\Models\Outlet;
 use App\Domain\Sales\Enums\OrderStatus;
 use App\Domain\Sales\Enums\OrderType;
@@ -19,11 +20,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property OrderStatus $status
  * @property OrderType $type
  * @property CarbonImmutable|null $paid_at
+ * @property string|null $business_date
  */
 class Order extends DomainModel
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+
+    /**
+     * A settled bill always knows its trading day, however it was written:
+     * by the till, by an offline sync, or by a seeder.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Order $order): void {
+            $attributes = $order->getAttributes();
+
+            if ($order->status === OrderStatus::Paid && ($attributes['business_date'] ?? null) === null && ($attributes['paid_at'] ?? null) !== null) {
+                $order->business_date = app(BusinessCalendar::class)->dateFor($order->outlet_id, $order->paid_at ?? now());
+            }
+        });
+    }
 
     protected function casts(): array
     {

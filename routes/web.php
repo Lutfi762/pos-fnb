@@ -99,6 +99,7 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
         Route::livewire('payments/review', 'pages::payments.review')->name('payments.review');
+        Route::livewire('outlet/settings', 'pages::outlet.settings')->name('outlet.settings');
         Route::get('payments/{payment}/proof', PaymentProofController::class)->name('payments.proof');
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');
         Route::get('catalog/import/template', CatalogImportTemplateController::class)->name('catalog.import.template');

@@ -49,6 +49,14 @@ class StockMovement extends DomainModel
     }
 
     /**
+     * What the stock moved was worth at the time, in whole rupiah.
+     */
+    public function value(): int
+    {
+        return (int) round(abs((float) $this->quantity) * $this->unit_cost);
+    }
+
+    /**
      * The order, purchase, or stock count that caused this movement.
      *
      * @return MorphTo<covariant \Illuminate\Database\Eloquent\Model, $this>

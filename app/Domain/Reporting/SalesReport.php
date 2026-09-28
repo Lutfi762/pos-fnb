@@ -16,45 +16,37 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
- * What the tills did over a stretch of days.
+ * What the tills did over a stretch of trading days.
  *
  * Every figure here comes from bills that were actually settled. A bill still
  * open at closing time is tomorrow's revenue, a voided one is nobody's, and a
  * bill merged into another is already counted in the one that swallowed it.
+ *
+ * Headline figures and the day-by-day series read the daily summaries;
+ * breakdowns that need individual lines (products, payment methods) read the
+ * bills, filtered by the same business date.
  */
 class SalesReport
 {
-    /**
-     * Net sales: what was charged, less the parts collected on behalf of
-     * somebody else. Written once here and reused by every query below.
-     */
-    private const NET_SALES = 'grand_total - rounding - tax_total - service_charge_total';
+    public function __construct(private readonly DailySummaries $summaries) {}
 
     public function summary(Outlet $outlet, DateRange $range): SalesSummary
     {
-        $row = $this->orders($outlet, $range)
-            ->selectRaw('count(*) as orders')
-            ->selectRaw('coalesce(sum(grand_total), 0) as gross')
-            ->selectRaw('coalesce(sum('.self::NET_SALES.'), 0) as net')
-            ->selectRaw('coalesce(sum(discount_total), 0) as discounts')
-            ->selectRaw('coalesce(sum(tax_total), 0) as tax')
-            ->selectRaw('coalesce(sum(service_charge_total), 0) as service')
-            ->selectRaw('coalesce(sum(guest_count), 0) as guests')
-            ->first();
-
-        if (! $row instanceof Order) {
-            return new SalesSummary;
-        }
+        $days = $this->summaries->forRange($outlet, $range);
 
         return new SalesSummary(
-            orders: (int) $row->getAttribute('orders'),
-            gross: (int) $row->getAttribute('gross'),
-            netSales: (int) $row->getAttribute('net'),
-            discounts: (int) $row->getAttribute('discounts'),
-            tax: (int) $row->getAttribute('tax'),
-            serviceCharge: (int) $row->getAttribute('service'),
-            cost: $this->cost($outlet, $range),
-            guests: (int) $row->getAttribute('guests'),
+            orders: (int) $days->sum('orders'),
+            gross: (int) $days->sum('gross'),
+            netSales: (int) $days->sum('net_sales'),
+            discounts: (int) $days->sum('discounts'),
+            tax: (int) $days->sum('tax'),
+            serviceCharge: (int) $days->sum('service_charge'),
+            cost: (int) $days->sum('cost'),
+            guests: (int) $days->sum('guests'),
+            refunds: (int) $days->sum('refunds'),
+            refunded: (int) $days->sum('refunded'),
+            refundedNet: (int) $days->sum('refunded_net'),
+            waste: (int) $days->sum('waste'),
         );
     }
 
@@ -62,22 +54,18 @@ class SalesReport
      * One row per day, including the days that sold nothing: a gap in a chart
      * reads as missing data, but a zero reads as a quiet Tuesday.
      *
-     * @return Collection<int, \stdClass&object{date: string, orders: int, net: int}>
+     * @return Collection<int, \stdClass&object{date: string, orders: int, net: int, refunded: int, waste: int}>
      */
     public function daily(Outlet $outlet, DateRange $range): Collection
     {
-        $rows = $this->orders($outlet, $range)
-            ->selectRaw('date(paid_at) as day')
-            ->selectRaw('count(*) as orders')
-            ->selectRaw('coalesce(sum('.self::NET_SALES.'), 0) as net')
-            ->groupBy('day')
-            ->get()
-            ->keyBy(fn (Order $row): string => (string) $row->getAttribute('day'));
+        $days = $this->summaries->forRange($outlet, $range);
 
         return collect($range->dates())->map(fn (string $date): object => (object) [
             'date' => $date,
-            'orders' => (int) ($rows->get($date)?->getAttribute('orders') ?? 0),
-            'net' => (int) ($rows->get($date)?->getAttribute('net') ?? 0),
+            'orders' => (int) $days->get($date)?->getAttribute('orders'),
+            'net' => (int) $days->get($date)?->getAttribute('net_sales'),
+            'refunded' => (int) $days->get($date)?->getAttribute('refunded'),
+            'waste' => (int) $days->get($date)?->getAttribute('waste'),
         ]);
     }
 
@@ -133,7 +121,8 @@ class SalesReport
     }
 
     /**
-     * Shifts closed in this range, newest first, for the drawer variance.
+     * Shifts opened on these trading days and since closed, newest first,
+     * for the drawer variance.
      *
      * @return Collection<int, CashierShift>
      */
@@ -143,25 +132,18 @@ class SalesReport
             ->with('cashier')
             ->where('outlet_id', $outlet->getKey())
             ->whereNotNull('closed_at')
-            ->whereBetween('closed_at', [$range->from, $range->to])
+            ->whereBetween('business_date', [$range->fromDate(), $range->toDate()])
             ->orderByDesc('closed_at')
             ->limit(50)
             ->get();
     }
 
     /**
-     * Cost of what was sold, from the snapshot written at ring-up time.
-     */
-    private function cost(Outlet $outlet, DateRange $range): int
-    {
-        return (int) $this->items($outlet, $range)->sum('cost_total');
-    }
-
-    /**
-     * Settled bills in the range.
+     * Settled bills on these trading days.
      *
-     * Paid time, not created time: a bill opened at 23:50 and settled at 00:10
-     * belongs to the day it was paid for, which is how the drawer counts it.
+     * The business date is fixed when the bill is paid: a bill opened at
+     * 23:50 and settled at 00:10 belongs to the night it was served in, as
+     * long as the outlet's day has not rolled over yet.
      *
      * @return Builder<Order>
      */
@@ -171,7 +153,7 @@ class SalesReport
             ->where('outlet_id', $outlet->getKey())
             ->where('status', OrderStatus::Paid)
             ->whereNull('merged_into_order_id')
-            ->whereBetween('paid_at', [$range->from, $range->to]);
+            ->whereBetween('business_date', [$range->fromDate(), $range->toDate()]);
     }
 
     /**

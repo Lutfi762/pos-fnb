@@ -61,7 +61,7 @@ class LogWaste
      */
     public function value(StockMovement $movement): int
     {
-        return (int) round(abs((float) $movement->quantity) * $movement->unit_cost);
+        return $movement->value();
     }
 
     /**
@@ -73,7 +73,7 @@ class LogWaste
             ->with(['item.unit', 'user'])
             ->where('outlet_id', $outlet->getKey())
             ->where('type', StockMovementType::Waste)
-            ->whereBetween('moved_at', [$from, $to])
+            ->whereBetween('business_date', [$from->toDateString(), $to->toDateString()])
             ->when($reason !== null && $reason !== '', fn ($query) => $query->where('reason', $reason))
             ->when($itemId !== null && $itemId !== '', fn ($query) => $query->where('inventory_item_id', $itemId))
             ->latest('moved_at')

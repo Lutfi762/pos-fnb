@@ -127,8 +127,10 @@ class ReconcileSettlement
     }
 
     /**
-     * ponytail: a calendar day in the app timezone. Moves to the outlet's
-     * business day with the rest of the reports.
+     * A calendar day, not a trading day: gateway settlement reports are cut
+     * at midnight, and one gateway account serves every outlet, each with its
+     * own day start. Matching is by reference, so the cut only decides which
+     * report a line is looked for in; missing() already checks either side.
      *
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */

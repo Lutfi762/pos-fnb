@@ -25,19 +25,22 @@ enum Preset: string
         return __('reports.preset.'.$this->value);
     }
 
-    public function range(): DateRange
+    /**
+     * @param  CarbonImmutable|null  $today  the outlet's current trading day; the calendar day when not given
+     */
+    public function range(?CarbonImmutable $today = null): DateRange
     {
-        $now = CarbonImmutable::now();
+        $today ??= CarbonImmutable::today();
 
         return match ($this) {
-            self::Today => new DateRange($now->startOfDay(), $now->endOfDay()),
-            self::Yesterday => new DateRange($now->subDay()->startOfDay(), $now->subDay()->endOfDay()),
+            self::Today => new DateRange($today->startOfDay(), $today->endOfDay()),
+            self::Yesterday => new DateRange($today->subDay()->startOfDay(), $today->subDay()->endOfDay()),
 
             // Rolling seven days including today, not the calendar week: on a
             // Monday morning a calendar week is one lunch service long.
-            self::Week => new DateRange($now->subDays(6)->startOfDay(), $now->endOfDay()),
+            self::Week => new DateRange($today->subDays(6)->startOfDay(), $today->endOfDay()),
 
-            self::Month => new DateRange($now->startOfMonth(), $now->endOfDay()),
+            self::Month => new DateRange($today->startOfMonth(), $today->endOfDay()),
         };
     }
 }

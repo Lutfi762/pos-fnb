@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Identity\CurrentOutlet;
 use App\Domain\Identity\Models\Outlet;
 use App\Domain\Inventory\LogWaste;
@@ -50,10 +51,14 @@ new #[Layout('layouts::app')] #[Title('Waste')] class extends Component {
     #[Computed]
     public function day(): CarbonImmutable
     {
+        // The outlet's trading day: waste logged at 01:00 in a late bar
+        // belongs to the night before.
+        $today = app(BusinessCalendar::class)->today($this->outlet);
+
         try {
-            return $this->date === '' ? CarbonImmutable::today() : CarbonImmutable::parse($this->date)->startOfDay();
+            return $this->date === '' ? $today : CarbonImmutable::parse($this->date)->startOfDay();
         } catch (\Throwable) {
-            return CarbonImmutable::today();
+            return $today;
         }
     }
 

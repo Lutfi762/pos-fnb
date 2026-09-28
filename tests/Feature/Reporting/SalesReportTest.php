@@ -12,6 +12,9 @@ use App\Domain\Sales\Models\OrderItem;
 use Carbon\CarbonImmutable;
 
 beforeEach(function (): void {
+    // Midday, well inside one trading day, so "now" and "today" agree.
+    $this->travelTo(CarbonImmutable::parse('2026-03-10 12:00'));
+
     $this->outlet = Outlet::factory()->create();
     $this->report = app(SalesReport::class);
     $this->today = DateRange::of(now(), now());
@@ -53,13 +56,18 @@ it('sums only what was settled in the range', function (): void {
         ->and($summary->netSales)->toBe(80_000);
 });
 
-it('files a bill by when it was paid, not when it was opened', function (): void {
-    // Opened before midnight, settled after: it belongs to the new day, which
-    // is the drawer that actually took the money.
-    $order = settled($this->outlet, 40_000, CarbonImmutable::now()->startOfDay()->addMinutes(10));
-    $order->forceFill(['placed_at' => CarbonImmutable::now()->subDay()->setTime(23, 50)])->save();
+it('files a bill by the trading day it was paid in, not when it was opened', function (): void {
+    // The day starts at 04:00. Settled at 00:10 after opening at 23:50: still
+    // last night's service, so still yesterday's report.
+    $lateNight = settled($this->outlet, 40_000, CarbonImmutable::parse('2026-03-10 00:10'));
+    $lateNight->forceFill(['placed_at' => CarbonImmutable::parse('2026-03-09 23:50')])->save();
 
-    expect($this->report->summary($this->outlet, $this->today)->orders)->toBe(1);
+    // Opened last night, settled after the day rolled over: today's.
+    settled($this->outlet, 25_000, CarbonImmutable::parse('2026-03-10 04:05'));
+
+    expect($lateNight->refresh()->business_date)->toBe('2026-03-09')
+        ->and($this->report->summary($this->outlet, $this->today)->netSales)->toBe(25_000)
+        ->and($this->report->summary($this->outlet, DateRange::of('2026-03-09', '2026-03-09'))->netSales)->toBe(40_000);
 });
 
 it('ignores open, cancelled and merged bills', function (): void {
