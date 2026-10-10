@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Reporting\DateRange;
 use App\Domain\Reporting\Enums\Preset;
+use Carbon\CarbonImmutable;
 
 it('covers whole days at both ends', function (): void {
     $range = DateRange::of('2026-03-01', '2026-03-07');
@@ -39,4 +40,14 @@ it('lists every date in between', function (): void {
 it('reads the week as a rolling seven days', function (): void {
     expect(Preset::Week->range()->days())->toBe(7)
         ->and(Preset::Today->range()->days())->toBe(1);
+});
+
+it('reads the longer presets from the outlet day, not the calendar', function (): void {
+    $today = CarbonImmutable::parse('2026-03-10');
+
+    expect(Preset::Last30->range($today)->fromDate())->toBe('2026-02-09')
+        ->and(Preset::Last30->range($today)->days())->toBe(30)
+        ->and(Preset::LastMonth->range($today)->fromDate())->toBe('2026-02-01')
+        ->and(Preset::LastMonth->range($today)->toDate())->toBe('2026-02-28')
+        ->and(Preset::LastMonth->range(CarbonImmutable::parse('2026-03-31'))->toDate())->toBe('2026-02-28');
 });

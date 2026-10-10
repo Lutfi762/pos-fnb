@@ -11,3 +11,9 @@ parameters:
         - routes/
 
     level: 7
+
+    # dompdf is optional (composer require dompdf/dompdf). Its adapter is the
+    # only file that names its classes, so its body is not analysed when it is absent.
+    excludePaths:
+        analyse:
+            - app/Support/Pdf/DompdfEngine.php

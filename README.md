@@ -139,6 +139,31 @@ membuatnya lebih cepat.
 Kalau `BROADCAST_CONNECTION=reverb` dan Reverb berjalan, layar pembayaran juga
 langsung pindah ke struk begitu webhook masuk.
 
+## Laporan dan ekspor
+
+- `/dashboard`: hari ini dibanding hari yang sama minggu lalu, grafik 7 hari,
+  jam sibuk, stok kritis, dan status sistem.
+- `/reports`: ringkasan, penjualan per produk, laba kotor, dan arus kas untuk
+  rentang tanggal bebas (semuanya per hari operasional outlet). Kasir hanya
+  melihat ringkasan dan produk, tanpa harga pokok.
+- `/orders`: semua bill dengan filter; tiap bill bisa diunduh sebagai PDF atau
+  Excel oleh siapa pun di outlet itu.
+
+Ekspor laporan (Excel/PDF) hanya untuk manajer dan owner, dan dicatat di audit
+log. Laporan lebih dari `REPORT_QUEUE_THRESHOLD` baris (bawaan 2000) disiapkan
+lewat antrean (`php artisan queue:work`) lalu muncul di "Ekspor terakhir";
+filenya dihapus otomatis setelah 24 jam (`meja:prune-exports`, terjadwal tiap
+jam).
+
+PDF langsung butuh dompdf:
+
+```bash
+composer require dompdf/dompdf
+```
+
+Tanpa dompdf, tombol PDF membuka halaman siap cetak yang langsung memunculkan
+dialog cetak; pilih "Simpan sebagai PDF".
+
 ## Gerbang sebelum commit
 
 ```bash

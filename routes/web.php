@@ -5,7 +5,9 @@ use App\Domain\Identity\ScreenLock;
 use App\Http\Controllers\CatalogImportTemplateController;
 use App\Http\Controllers\GatewayWebhookController;
 use App\Http\Controllers\OfflineController;
+use App\Http\Controllers\OrderExportController;
 use App\Http\Controllers\PaymentProofController;
+use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\SyncOperationController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +77,18 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
 
     // The sales report for any stretch of days, same rule on cost figures.
     Route::livewire('reports', 'pages::reports.index')->name('reports.index');
+
+    // Every bill, with one-bill PDF and Excel for anyone at the outlet.
+    Route::livewire('orders', 'pages::orders.index')->name('orders.index');
+    Route::get('orders/{order}/export/{format}', OrderExportController::class)
+        ->whereIn('format', ['pdf', 'xlsx'])
+        ->name('orders.export');
+
+    // Report files leave the building with cost and cash in them.
+    Route::middleware('role:owner,manager')->group(function () {
+        Route::get('reports/export/{type}', ReportExportController::class)->name('reports.export');
+        Route::get('reports/exports/{export}', [ReportExportController::class, 'download'])->name('reports.exports.download');
+    });
 
     // Internal reference page for the design system.
     Route::view('design-system', 'pages.design-system')->name('design-system');

@@ -8,7 +8,7 @@ use App\Domain\Reporting\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
- * The four questions an owner actually asks, as buttons.
+ * The questions an owner actually asks, as buttons.
  *
  * Anything else is typed into the two date fields, so this list stays short
  * rather than growing a case for every possible window.
@@ -18,7 +18,9 @@ enum Preset: string
     case Today = 'today';
     case Yesterday = 'yesterday';
     case Week = 'week';
+    case Last30 = '30d';
     case Month = 'month';
+    case LastMonth = 'last_month';
 
     public function label(): string
     {
@@ -40,7 +42,12 @@ enum Preset: string
             // Monday morning a calendar week is one lunch service long.
             self::Week => new DateRange($today->subDays(6)->startOfDay(), $today->endOfDay()),
 
+            self::Last30 => new DateRange($today->subDays(29)->startOfDay(), $today->endOfDay()),
+
             self::Month => new DateRange($today->startOfMonth(), $today->endOfDay()),
+
+            // The whole of last month, the one an accountant asks for.
+            self::LastMonth => new DateRange($today->subMonthNoOverflow()->startOfMonth(), $today->subMonthNoOverflow()->endOfMonth()),
         };
     }
 }

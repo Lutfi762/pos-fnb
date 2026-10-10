@@ -4,6 +4,7 @@ use App\Domain\Identity\Models\Outlet;
 use App\Domain\Reporting\DailySummaries;
 use App\Domain\Reporting\DateRange;
 use App\Domain\Reporting\RedateTransactions;
+use App\Domain\Reporting\ReportExports;
 use App\Domain\Sales\Gateway\GatewayException;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\ReconcileSettlement;
@@ -74,5 +75,14 @@ Artisan::command('meja:rebuild-summaries
 
     return 0;
 })->purpose('Bangun ulang ringkasan penjualan harian');
+
+// Exported files are kept for a day, then removed.
+Artisan::command('meja:prune-exports', function (ReportExports $exports) {
+    $this->info(__('reports.pruned', ['count' => $exports->prune()]));
+
+    return 0;
+})->purpose('Hapus file ekspor laporan yang sudah kedaluwarsa');
+
+Schedule::command('meja:prune-exports')->hourly();
 
 Schedule::command('meja:reconcile-settlements')->dailyAt('06:10')->withoutOverlapping();

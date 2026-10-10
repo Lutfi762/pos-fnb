@@ -61,12 +61,12 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi dan commit `feat: dashboard lengkap dengan grafik 7 hari, jam sibuk, dan stok kritis`
 
 ## Fase 6 — Laporan dan ekspor
-- [ ] Filter/preset/rentang/URL/preferensi/perbandingan
-- [ ] Semua laporan business date
-- [ ] PDF/Excel per laporan/transaksi, CSV tetap opsional
-- [ ] Export jobs queue/expiry/audit/otorisasi/online only
-- [ ] Test preset, akses outlet, angka Excel, queue, kasir ditolak, dashboard sama
-- [ ] Validasi dan commit `feat: laporan lengkap, mode perbandingan, dan ekspor PDF/Excel`
+- [x] Filter/preset/rentang/URL/preferensi/perbandingan
+- [x] Semua laporan business date
+- [x] PDF/Excel per laporan/transaksi, CSV tetap opsional
+- [x] Export jobs queue/expiry/audit/otorisasi/online only
+- [x] Test preset, akses outlet, angka Excel, queue, kasir ditolak, dashboard sama
+- [x] Validasi dan commit `feat: laporan lengkap, mode perbandingan, dan ekspor PDF/Excel`
 
 ## Fase 7 — Polish dan rilis
 - [ ] Motion One terbatas; daftar animasi; reduced motion
@@ -97,6 +97,7 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 3: dependensi npm baru `qrcode-generator` (MIT, tanpa dependensi) untuk menggambar kode QRIS. Jalankan `npm install`.
 - Fase 4 selesai 2026-09-28. Hari operasional per outlet (zona waktu + jam mulai, bawaan WIB 04.00) dicap ke orders, refunds, stock_movements, cashier_shifts. Ringkasan harian dibangun ulang setelah setiap bayar/refund/waste, dan dibangun sendiri saat laporan meminta hari yang belum ada.
 - Fase 5 selesai. Dashboard baru di /dashboard (halaman awal setelah login); laporan lama pindah ke /reports. Chart.js (npm `chart.js`) dimuat hanya di dashboard lewat import dinamis (chunk terpisah, kasir tidak mengunduhnya). Angka diperbarui tiap 60 detik selama tab terlihat.
+- Fase 6 selesai. Laporan per tab di /reports (ringkasan, produk, laba kotor, arus kas) dari satu sumber (`ReportCatalog` → `ReportTable`) yang sama untuk layar, Excel, dan PDF. Daftar bill di /orders. Excel memakai penulis XLSX bawaan; PDF memakai dompdf bila terpasang (`composer require dompdf/dompdf`), selain itu halaman siap cetak. Ekspor besar lewat antrean dan disimpan 24 jam.
 - Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.

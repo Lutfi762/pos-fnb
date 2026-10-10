@@ -37,6 +37,35 @@
     gap: 0.75rem;
 }
 
+/* Tabs ------------------------------------------------------------------- */
+
+.report-tabs {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+}
+
+.report-tab {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.report-tab:hover {
+    color: var(--text);
+}
+
+.report-tab-on {
+    border-bottom-color: var(--brand);
+    color: var(--text);
+}
+
 /* Tiles ------------------------------------------------------------------ */
 
 .report-tiles {
@@ -121,6 +150,9 @@
 /* Tables ----------------------------------------------------------------- */
 
 .report-table {
+    /* Holds screen-reader-only text inside its own scroll box; without it
+       that text is placed against the page and widens it on a phone. */
+    position: relative;
     width: 100%;
     /* 15px, the floor the project sets for anything read on a shift. */
     font-size: 0.9375rem;

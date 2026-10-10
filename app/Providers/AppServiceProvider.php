@@ -8,6 +8,7 @@ use App\Domain\Identity\BusinessCalendar;
 use App\Domain\Sales\Gateway\FakeGateway;
 use App\Domain\Sales\Gateway\PaymentGateway;
 use App\Domain\Sales\Gateway\XenditGateway;
+use App\Support\Pdf\PdfRenderer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -22,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // PDFs through dompdf when it is installed, a printable page when not.
+        $this->app->singleton(PdfRenderer::class, fn (): PdfRenderer => PdfRenderer::detect());
+
         // Outlet clocks are read once per request or job, then reused.
         $this->app->scoped(BusinessCalendar::class);
 

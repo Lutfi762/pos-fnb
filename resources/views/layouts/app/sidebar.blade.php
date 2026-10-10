@@ -23,6 +23,10 @@
                         {{ __('reports.title') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="receipt-percent" :href="route('orders.index')" :current="request()->routeIs('orders.*')" wire:navigate data-test="nav-orders">
+                        {{ __('orders.nav') }}
+                    </flux:sidebar.item>
+
                     <flux:sidebar.item icon="calculator" :href="route('pos.index')" :current="request()->routeIs('pos.index')" wire:navigate>
                         {{ __('pos.title') }}
                     </flux:sidebar.item>
