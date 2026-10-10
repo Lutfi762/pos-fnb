@@ -1,0 +1,380 @@
+/*
+| The landing page.
+|
+| Read standing up, on a tablet by the pass as often as on a laptop, so the
+| headline figures are big and every card stands on its own. Motion is
+| limited to things arriving: tiles rising in, bars growing, numbers
+| counting up. None of it runs for anyone who asked for less motion.
+*/
+
+.dash {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dash-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Headline figures ------------------------------------------------------ */
+
+/* One column on a phone, two on a tablet held upright, three from there:
+   three tiles for a cashier fill one row, six for a manager fill two. */
+.dash-kpis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+@media (min-width: 30rem) {
+    .dash-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 64rem) {
+    .dash-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.dash-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background: var(--surface);
+}
+
+.dash-kpi dt {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+}
+
+.dash-kpi-value {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.2vw, 1.875rem);
+    font-weight: 700;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums lining-nums;
+    overflow-wrap: anywhere;
+}
+
+/* Net sales leads: the one number that is the outlet's own money. */
+.dash-kpi-lead {
+    border-color: color-mix(in oklab, var(--brand) 45%, var(--border));
+    background: linear-gradient(160deg, color-mix(in oklab, var(--brand) 12%, var(--surface)), var(--surface) 70%);
+}
+
+.dash-kpi-lead .dash-kpi-value {
+    color: var(--brand);
+}
+
+.dash-kpi-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.dash-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.375rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.dash-delta-none {
+    padding: 0;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.dash-delta-up {
+    background: var(--state-done-surface);
+    color: var(--state-done-text);
+}
+
+.dash-delta-down {
+    background: var(--state-danger-surface);
+    color: var(--state-danger-text);
+}
+
+.dash-delta-flat {
+    background: var(--surface-sunken);
+    color: var(--text-muted);
+}
+
+/* Cards ------------------------------------------------------------------ */
+
+.dash-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 64rem) {
+    .dash-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .dash-card-wide {
+        grid-column: span 2;
+    }
+}
+
+.dash-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+    padding: 1.125rem;
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background: var(--surface);
+}
+
+.dash-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dash-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.dash-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.dash-swatch {
+    width: 0.875rem;
+    height: 0.5rem;
+    border-radius: 2px;
+}
+
+.dash-swatch-brand {
+    background: var(--brand);
+}
+
+.dash-swatch-muted {
+    height: 0;
+    border-top: 2px dashed var(--text-muted);
+}
+
+.dash-chart {
+    position: relative;
+    height: 16rem;
+}
+
+.dash-details summary {
+    cursor: pointer;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.9375rem;
+    color: var(--brand);
+}
+
+.dash-details[open] summary {
+    margin-bottom: 0.5rem;
+}
+
+/* Proportion bars ------------------------------------------------------- */
+
+.dash-bars {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.dash-bar-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+}
+
+.dash-bar {
+    display: block;
+    height: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 999px;
+    background: var(--surface-sunken);
+    overflow: hidden;
+}
+
+.dash-bar > span {
+    display: block;
+    width: var(--share, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+    transform-origin: left center;
+}
+
+.dash-bar-accent > span {
+    background: var(--brand-accent);
+}
+
+.dash-bar-note {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes meja-grow {
+        from {
+            transform: scaleX(0);
+        }
+        to {
+            transform: none;
+        }
+    }
+
+    .dash-bar > span {
+        animation: meja-grow var(--dur-moment) var(--ease-out) both;
+    }
+}
+
+/* Busy hours heatmap ---------------------------------------------------- */
+
+.dash-heat-wrap {
+    overflow-x: auto;
+}
+
+.dash-heat {
+    border-collapse: separate;
+    border-spacing: 3px;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.dash-heat th {
+    font-weight: 500;
+    padding: 0 0.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-heat tbody th {
+    text-align: start;
+    padding-right: 0.5rem;
+}
+
+.dash-heat-cell {
+    width: 1.75rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    border-radius: 4px;
+}
+
+.dash-heat-0 {
+    background: var(--surface-sunken);
+}
+
+.dash-heat-1 {
+    background: color-mix(in oklab, var(--brand) 22%, var(--surface));
+}
+
+.dash-heat-2 {
+    background: color-mix(in oklab, var(--brand) 45%, var(--surface));
+}
+
+.dash-heat-3 {
+    background: color-mix(in oklab, var(--brand) 70%, var(--surface));
+}
+
+.dash-heat-4 {
+    background: var(--brand);
+}
+
+.dash-heat-scale {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.dash-heat-scale .dash-heat-cell {
+    display: inline-block;
+    width: 0.875rem;
+    min-width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 3px;
+}
+
+/* Lists ----------------------------------------------------------------- */
+
+.dash-list {
+    display: grid;
+    gap: 0.625rem;
+}
+
+.dash-list > li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    font-size: 0.9375rem;
+}
+
+.dash-pill {
+    flex-shrink: 0;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.dash-pill-pending {
+    background: var(--state-pending-surface);
+    color: var(--state-pending-text);
+}
+
+.dash-pill-danger {
+    background: var(--state-danger-surface);
+    color: var(--state-danger-text);
+}
+
+.dash-issue,
+.dash-ok {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+}
+
+.dash-issue {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 3px;
+}
+
+.dash-issue:hover {
+    text-decoration-color: var(--brand);
+}

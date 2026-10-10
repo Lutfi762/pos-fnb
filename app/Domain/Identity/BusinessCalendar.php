@@ -65,6 +65,16 @@ class BusinessCalendar
     }
 
     /**
+     * The outlet's timezone and the hour its trading day starts.
+     *
+     * @return array{zone: string, hour: int}
+     */
+    public function clockOf(Outlet|string $outlet): array
+    {
+        return $this->clock($outlet);
+    }
+
+    /**
      * Forget cached settings, after an outlet's clock was changed.
      */
     public function forget(Outlet|string $outlet): void

@@ -10,6 +10,7 @@
 @import './pay.css';
 @import './kds.css';
 @import './report.css';
+@import './dashboard.css';
 @import './offline.css';
 
 @source '../views';

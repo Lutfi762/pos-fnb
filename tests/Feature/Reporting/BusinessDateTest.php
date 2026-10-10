@@ -185,7 +185,7 @@ it('shows the trading day in progress as today on the report', function (): void
 
     $this->actingAs($this->manager);
 
-    Livewire::test('pages::dashboard')->assertSee('42.000');
+    Livewire::test('pages::reports.index')->assertSee('42.000');
 });
 
 it('dates shifts by the trading day they opened in', function (): void {

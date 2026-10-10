@@ -43,7 +43,7 @@ function openReport(Outlet $outlet, Role $role): Testable
     test()->actingAs($user);
     app(CurrentOutlet::class)->set($outlet, $user);
 
-    return Livewire::test('pages::dashboard');
+    return Livewire::test('pages::reports.index');
 }
 
 it('shows a manager the margin', function (): void {

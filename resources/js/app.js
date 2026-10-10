@@ -1,4 +1,5 @@
 import { installOffline } from './offline';
+import { countUp, weekChart } from './dashboard';
 import { qrisCode } from './qris';
 
 /*
@@ -10,4 +11,6 @@ installOffline();
 
 document.addEventListener('alpine:init', () => {
     window.Alpine.data('qrisCode', qrisCode);
+    window.Alpine.data('countUp', countUp);
+    window.Alpine.data('weekChart', weekChart);
 });

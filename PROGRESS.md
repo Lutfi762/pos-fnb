@@ -54,11 +54,11 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi dan commit `fix: laporan berbasis hari operasional dan tabel ringkasan harian`
 
 ## Fase 5 — Dashboard
-- [ ] Widget KPI dan pembanding minggu lalu
-- [ ] Chart.js Vite + Alpine reusable, dark mode, destroy, tabel aksesibel
-- [ ] Grafik 7 hari, heatmap CSS, stok/waste, status sistem, owner outlet compare
-- [ ] Animasi/reduced motion/responsif/performa
-- [ ] Validasi dan commit `feat: dashboard lengkap dengan grafik 7 hari, jam sibuk, dan stok kritis`
+- [x] Widget KPI dan pembanding minggu lalu (hari yang sama, sampai menit yang sama)
+- [x] Chart.js Vite + Alpine reusable, dark mode, destroy, tabel aksesibel
+- [x] Grafik 7 hari, heatmap CSS, stok/waste, status sistem, owner outlet compare
+- [x] Animasi/reduced motion/responsif/performa
+- [x] Validasi dan commit `feat: dashboard lengkap dengan grafik 7 hari, jam sibuk, dan stok kritis`
 
 ## Fase 6 — Laporan dan ekspor
 - [ ] Filter/preset/rentang/URL/preferensi/perbandingan
@@ -96,6 +96,7 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 3: `phpstan analyse` (level 7) sekarang bersih, termasuk temuan lama di Sync, DeductSaleStock, dan XlsxReader.
 - Fase 3: dependensi npm baru `qrcode-generator` (MIT, tanpa dependensi) untuk menggambar kode QRIS. Jalankan `npm install`.
 - Fase 4 selesai 2026-09-28. Hari operasional per outlet (zona waktu + jam mulai, bawaan WIB 04.00) dicap ke orders, refunds, stock_movements, cashier_shifts. Ringkasan harian dibangun ulang setelah setiap bayar/refund/waste, dan dibangun sendiri saat laporan meminta hari yang belum ada.
+- Fase 5 selesai. Dashboard baru di /dashboard (halaman awal setelah login); laporan lama pindah ke /reports. Chart.js (npm `chart.js`) dimuat hanya di dashboard lewat import dinamis (chunk terpisah, kasir tidak mengunduhnya). Angka diperbarui tiap 60 detik selama tab terlihat.
 - Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.

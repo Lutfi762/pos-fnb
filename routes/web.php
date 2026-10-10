@@ -69,9 +69,12 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
     Route::post('sync/shifts', SyncOperationController::class)->defaults('command', 'shift')->name('sync.shifts.store');
     Route::post('sync/cash-payments', SyncOperationController::class)->defaults('command', 'payment.recorded')->name('sync.cash-payments.store');
 
-    // The landing page after login is the sales report. Cashiers may open it
-    // too: the page itself hides the cost and margin figures from them.
+    // The landing page after login: how today is going. Every role sees it;
+    // the page itself hides cost, margin, and staff figures from cashiers.
     Route::livewire('dashboard', 'pages::dashboard')->name('dashboard');
+
+    // The sales report for any stretch of days, same rule on cost figures.
+    Route::livewire('reports', 'pages::reports.index')->name('reports.index');
 
     // Internal reference page for the design system.
     Route::view('design-system', 'pages.design-system')->name('design-system');
