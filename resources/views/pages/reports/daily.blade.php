@@ -21,27 +21,29 @@
         @endforeach
     </div>
 
-    <table class="report-table">
-        <caption class="sr-only">{{ __('reports.daily') }}</caption>
+    <div class="relative overflow-x-auto">
+        <table class="report-table">
+            <caption class="sr-only">{{ __('reports.daily') }}</caption>
 
-        <thead>
-            <tr>
-                <th scope="col" class="text-start">{{ __('reports.date') }}</th>
-                <th scope="col" class="text-end">{{ __('reports.orders') }}</th>
-                <th scope="col" class="text-end">{{ __('reports.net_sales') }}</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach ($this->daily as $day)
-                <tr wire:key="day-{{ $day->date }}">
-                    <th scope="row" class="text-start font-normal">
-                        {{ \Carbon\CarbonImmutable::parse($day->date)->translatedFormat('D, d M') }}
-                    </th>
-                    <td class="numeric tabular-nums">{{ $day->orders }}</td>
-                    <td><x-money :amount="$day->net" /></td>
+            <thead>
+                <tr>
+                    <th scope="col" class="text-start">{{ __('reports.date') }}</th>
+                    <th scope="col" class="text-end">{{ __('reports.orders') }}</th>
+                    <th scope="col" class="text-end">{{ __('reports.net_sales') }}</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+
+            <tbody>
+                @foreach ($this->daily as $day)
+                    <tr wire:key="day-{{ $day->date }}">
+                        <th scope="row" class="text-start font-normal">
+                            {{ \Carbon\CarbonImmutable::parse($day->date)->translatedFormat('D, d M') }}
+                        </th>
+                        <td class="numeric tabular-nums">{{ $day->orders }}</td>
+                        <td><x-money :amount="$day->net" /></td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </section>

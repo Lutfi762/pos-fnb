@@ -69,12 +69,12 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - [x] Validasi dan commit `feat: laporan lengkap, mode perbandingan, dan ekspor PDF/Excel`
 
 ## Fase 7 — Polish dan rilis
-- [ ] Motion One terbatas; daftar animasi; reduced motion
-- [ ] Aksesibilitas kontras, keyboard, focus trap/Esc, label pembaca layar
-- [ ] N+1, uang, business date, hardcode/hex/TODO/otorisasi, viewport
-- [ ] E2E migrate fresh seluruh alur
-- [ ] UI kit local-only/hapus, README, backup/restore, deploy VPS, setting owner
-- [ ] Validasi dan commit `chore: penghalusan animasi, aksesibilitas, perbaikan bug, dan persiapan rilis`
+- [x] ~~Motion One terbatas~~ tetap CSS saja (tanpa skrip tambahan untuk kasir offline); daftar animasi di README; reduced motion
+- [x] Aksesibilitas kontras, keyboard, focus trap/Esc, label pembaca layar
+- [x] N+1, uang, business date, hardcode/hex/TODO/otorisasi, viewport
+- [x] E2E migrate fresh seluruh alur
+- [x] UI kit local-only/hapus, README, backup/restore, deploy VPS, setting owner
+- [x] Validasi dan commit `chore: penghalusan animasi, aksesibilitas, perbaikan bug, dan persiapan rilis`
 
 ## Query tanggal (dimigrasikan pada Fase 4)
 - `app/Domain/Reporting/DateRange.php`: sekarang rentang hari operasional (`fromDate()`/`toDate()`).
@@ -98,7 +98,13 @@ Aturan: fase berikutnya hanya setelah test, build, cek browser, dan commit fase 
 - Fase 4 selesai 2026-09-28. Hari operasional per outlet (zona waktu + jam mulai, bawaan WIB 04.00) dicap ke orders, refunds, stock_movements, cashier_shifts. Ringkasan harian dibangun ulang setelah setiap bayar/refund/waste, dan dibangun sendiri saat laporan meminta hari yang belum ada.
 - Fase 5 selesai. Dashboard baru di /dashboard (halaman awal setelah login); laporan lama pindah ke /reports. Chart.js (npm `chart.js`) dimuat hanya di dashboard lewat import dinamis (chunk terpisah, kasir tidak mengunduhnya). Angka diperbarui tiap 60 detik selama tab terlihat.
 - Fase 6 selesai. Laporan per tab di /reports (ringkasan, produk, laba kotor, arus kas) dari satu sumber (`ReportCatalog` → `ReportTable`) yang sama untuk layar, Excel, dan PDF. Daftar bill di /orders. Excel memakai penulis XLSX bawaan; PDF memakai dompdf bila terpasang (`composer require dompdf/dompdf`), selain itu halaman siap cetak. Ekspor besar lewat antrean dan disimpan 24 jam.
-- Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet.
+- Catatan untuk Fase 7: PIN supervisor yang sama dipakai dua orang membuat penyetuju tercatat sebagai orang pertama yang cocok. Seeder memakai 123456 untuk semua; pertimbangkan PIN unik per outlet. (Selesai di Fase 7.)
+- Fase 7 selesai 2026-10-10. Baru: halaman Staf (/staff) dengan PIN unik per rekan kerja, PIN sendiri di Pengaturan > PIN, akun nonaktif langsung keluar dari sesinya, PIN supervisor ganda ditolak dengan pesan jelas; Pengaturan outlet ditambah profil/struk (manajer) dan pajak/servis/pembulatan (owner); Metode pembayaran (/payment-methods, owner); `meja:backup` terjadwal 04.30 dengan rotasi; README akun demo, cadangan/pemulihan, deploy Laragon dan VPS, daftar animasi.
+- Ditemukan & diperbaiki di Fase 7 (lewat E2E browser): ketuk menu di layar kasir online tidak pernah memperbarui keranjang atau membuka lembar modifier di browser, karena grid menu dan keranjang dibungkus `@island` Livewire (aksi di dalam island hanya merender island itu). Island dihapus, ada test penjaga. Test Livewire sebelumnya tidak menangkapnya karena memeriksa state, bukan DOM.
+- Ditemukan & diperbaiki di Fase 7: lembar modifier tetap tampil kosong setelah "Masukkan keranjang" (computed `modifierProduct` tersimpan selama request); hitungan keranjang selalu "Belum ada item" (format `trans_choice` salah); pesan validasi, login, dan reset kata sandi masih bahasa Inggris (sekarang `lang/id/validation.php`, `auth.php`, `passwords.php`, `pagination.php`); tabel laporan, katalog, dan stok melebar di HP; jam KDS "hampir telat" dan ikon peringatan dashboard kurang kontras di mode terang.
+- Fase 7: kelas warna bawaan starter kit (zinc/red/green) diganti token aplikasi; hex hanya tersisa di `app.css` (definisi token), `exports/_styles.blade.php` (PDF dompdf), dan meta `theme-color` (tag meta tidak bisa membaca variabel CSS).
+- Fase 7: halaman /design-system hanya terbuka di environment local dan testing.
+- E2E 2026-10-10 di database `migrate:fresh --seed`: owner tambah staf, PIN ganda ditolak, ubah fee metode bayar, catatan kaki struk, PIN sendiri, serah terima kasir lewat kunci layar, buka shift, pesan dengan modifier, bayar tunai, struk, Esc menutup lembar refund, refund dengan PIN owner, laporan + Excel/PDF, daftar bill + Excel; 21 halaman di 390px dan 1280px, terang dan gelap: tanpa overflow, tanpa error console, tanpa request gagal (KDS butuh Reverb hidup untuk websocket).
 - Commit sebelum prompt: `d5b56a8 fix: pertahankan draft offline tertahan`.
 - Baseline 2026-09-22: `php artisan test --compact` hijau: 270 passed, 640 assertions, 135.42s. `npm run build` hijau.
 - Untracked sebelum audit: `Claude outputs/`; tidak disentuh.

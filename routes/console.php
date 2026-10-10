@@ -8,10 +8,12 @@ use App\Domain\Reporting\ReportExports;
 use App\Domain\Sales\Gateway\GatewayException;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Sales\ReconcileSettlement;
+use App\Support\Backup\DatabaseBackup;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Number;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -83,6 +85,33 @@ Artisan::command('meja:prune-exports', function (ReportExports $exports) {
     return 0;
 })->purpose('Hapus file ekspor laporan yang sudah kedaluwarsa');
 
+// A compressed copy of the database, oldest copies rotated out.
+Artisan::command('meja:backup
+    {--keep= : Jumlah cadangan yang disimpan, default BACKUP_KEEP}
+    {--connection= : Koneksi database, default DB_CONNECTION}', function (DatabaseBackup $backup) {
+    $connection = $this->option('connection');
+
+    try {
+        $path = $backup->run(is_string($connection) && $connection !== '' ? $connection : null);
+    } catch (RuntimeException $exception) {
+        $this->error(__('backup.failed', ['error' => $exception->getMessage()]));
+
+        return 1;
+    }
+
+    $this->info(__('backup.done', ['path' => $path, 'size' => Number::fileSize((int) filesize($path))]));
+
+    $keep = $this->option('keep');
+    $keep = is_numeric($keep) ? (int) $keep : (int) config('backup.keep');
+
+    $this->line(__('backup.pruned', ['count' => $backup->prune($keep), 'kept' => min($keep, count($backup->list()))]));
+
+    return 0;
+})->purpose('Cadangkan database ke folder BACKUP_PATH');
+
 Schedule::command('meja:prune-exports')->hourly();
+
+// After the default trading day has closed (04.00) and before opening.
+Schedule::command('meja:backup')->dailyAt('04:30')->withoutOverlapping();
 
 Schedule::command('meja:reconcile-settlements')->dailyAt('06:10')->withoutOverlapping();

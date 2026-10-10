@@ -17,14 +17,16 @@ class UserSeeder extends Seeder
         $outlets = Outlet::orderBy('code')->get();
         $first = $outlets->firstOrFail();
 
-        // Demo accounts, one per role. Password and PIN are the same for all of
-        // them because this data only ever exists on a developer machine.
+        // Demo accounts, one per role, all with the password "password".
+        // PINs differ: a supervisor is recognised by PIN alone, so two people
+        // sharing one could not be told apart (see Supervisors). The README
+        // lists them.
         $people = [
-            ['name' => 'Owner Meja', 'email' => 'owner@meja.test', 'role' => Role::Owner, 'all' => true],
-            ['name' => 'Manajer Kemang', 'email' => 'manajer@meja.test', 'role' => Role::Manager, 'all' => false],
-            ['name' => 'Kasir Kemang', 'email' => 'kasir@meja.test', 'role' => Role::Cashier, 'all' => false],
-            ['name' => 'Dapur Kemang', 'email' => 'dapur@meja.test', 'role' => Role::Kitchen, 'all' => false],
-            ['name' => 'Gudang Kemang', 'email' => 'gudang@meja.test', 'role' => Role::Warehouse, 'all' => false],
+            ['name' => 'Owner Meja', 'email' => 'owner@meja.test', 'role' => Role::Owner, 'all' => true, 'pin' => '246810'],
+            ['name' => 'Manajer Kemang', 'email' => 'manajer@meja.test', 'role' => Role::Manager, 'all' => false, 'pin' => '135790'],
+            ['name' => 'Kasir Kemang', 'email' => 'kasir@meja.test', 'role' => Role::Cashier, 'all' => false, 'pin' => '102030'],
+            ['name' => 'Dapur Kemang', 'email' => 'dapur@meja.test', 'role' => Role::Kitchen, 'all' => false, 'pin' => '112233'],
+            ['name' => 'Gudang Kemang', 'email' => 'gudang@meja.test', 'role' => Role::Warehouse, 'all' => false, 'pin' => '445566'],
         ];
 
         foreach ($people as $person) {
@@ -33,7 +35,7 @@ class UserSeeder extends Seeder
                 [
                     'name' => $person['name'],
                     'password' => Hash::make('password'),
-                    'pin_hash' => Hash::make('123456'),
+                    'pin_hash' => Hash::make($person['pin']),
                     'email_verified_at' => now(),
                     'is_active' => true,
                     'last_outlet_id' => $first->id,

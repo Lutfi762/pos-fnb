@@ -1,5 +1,5 @@
 {{-- What was ordered, and how much of it has landed so far. --}}
-<div class="overflow-x-auto rounded-xl border border-line bg-surface">
+<div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
     <table class="w-full border-collapse">
         <thead>
             <tr class="border-b border-line text-sm text-content-muted">

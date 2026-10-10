@@ -257,7 +257,7 @@
             {{-- Modifier sheet. --}}
             <template x-if="sheet">
                 <div class="pos-sheet-backdrop" @click.self="closeSheet()" @keydown.escape.window="closeSheet()">
-                    <div class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-sheet-title">
+                    <div x-trap.noscroll="true" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-sheet-title">
                         <span class="pos-sheet-handle" aria-hidden="true"></span>
                         <h2 id="offline-sheet-title" class="text-lg font-semibold" x-text="sheet.product.name"></h2>
 
@@ -311,7 +311,7 @@
             {{-- Cash payment. --}}
             <template x-if="payingBill">
                 <div class="pos-sheet-backdrop" @click.self="cancelPayment()" @keydown.escape.window="cancelPayment()">
-                    <div class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-pay-title" data-test="offline-payment">
+                    <div x-trap.noscroll="true" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-pay-title" data-test="offline-payment">
                         <span class="pos-sheet-handle" aria-hidden="true"></span>
                         <h2 id="offline-pay-title" class="text-lg font-semibold">{{ __('offline.payment') }}</h2>
                         <p class="font-mono text-sm text-content-muted" x-text="payingBill.number"></p>
@@ -351,7 +351,7 @@
             {{-- Receipt. The .receipt block is what prints, the rest does not. --}}
             <template x-if="receipt">
                 <div class="pos-sheet-backdrop" @keydown.escape.window="closeReceipt()">
-                    <div class="pos-sheet offline-receipt-sheet" role="dialog" aria-modal="true" aria-label="{{ __('offline.receipt') }}">
+                    <div x-trap.noscroll="true" class="pos-sheet offline-receipt-sheet" role="dialog" aria-modal="true" aria-label="{{ __('offline.receipt') }}">
                         <div class="offline-success" aria-hidden="true">
                             <svg viewBox="0 0 52 52" class="offline-check"><circle cx="26" cy="26" r="24" /><path d="M15 27l7 7 15-15" /></svg>
                         </div>
@@ -417,7 +417,7 @@
             {{-- Bills rung up on this device. --}}
             <template x-if="billsPanel">
                 <div class="pos-sheet-backdrop" @click.self="billsPanel = false" @keydown.escape.window="billsPanel = false">
-                    <div class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-bills-title">
+                    <div x-trap.noscroll="true" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-bills-title">
                         <span class="pos-sheet-handle" aria-hidden="true"></span>
                         <h2 id="offline-bills-title" class="text-lg font-semibold">{{ __('offline.bills') }}</h2>
 
@@ -461,7 +461,7 @@
             {{-- Shift: open, cash in and out, close. --}}
             <template x-if="shiftPanel">
                 <div class="pos-sheet-backdrop" @click.self="shiftPanel = false" @keydown.escape.window="shiftPanel = false">
-                    <div class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-shift-title">
+                    <div x-trap.noscroll="true" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="offline-shift-title">
                         <span class="pos-sheet-handle" aria-hidden="true"></span>
                         <h2 id="offline-shift-title" class="text-lg font-semibold">{{ __('offline.shift') }}</h2>
 

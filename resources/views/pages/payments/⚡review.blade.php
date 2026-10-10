@@ -19,7 +19,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Cek pembayaran')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Payment review')] class extends Component {
     #[Url(as: 'tanggal', except: '')]
     public string $date = '';
 
@@ -186,7 +186,7 @@ new #[Layout('layouts::app')] #[Title('Cek pembayaran')] class extends Component
         @if ($this->unverified->isEmpty())
             <flux:text data-test="static-empty">{{ __('qris.review.static_empty') }}</flux:text>
         @else
-            <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+            <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
                 <table class="report-table" data-test="static-table">
                     <thead>
                         <tr>
@@ -242,7 +242,7 @@ new #[Layout('layouts::app')] #[Title('Cek pembayaran')] class extends Component
         @if ($this->attention->isEmpty())
             <flux:text data-test="attention-empty">{{ __('qris.review.attention_empty') }}</flux:text>
         @else
-            <div class="overflow-x-auto rounded-xl border border-pending bg-pending-surface">
+            <div class="relative overflow-x-auto rounded-xl border border-pending bg-pending-surface">
                 <table class="report-table" data-test="attention-table">
                     <thead>
                         <tr>
@@ -299,7 +299,7 @@ new #[Layout('layouts::app')] #[Title('Cek pembayaran')] class extends Component
         @if ($this->settlements->isEmpty())
             <flux:text class="text-content-muted">{{ __('qris.review.settlement_empty') }}</flux:text>
         @else
-            <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+            <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
                 <table class="report-table" data-test="settlement-table">
                     <thead>
                         <tr>

@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] #[Title('Layar terkunci')] class extends Component {
+new #[Layout('layouts::auth')] #[Title('Screen locked')] class extends Component {
     public string $userId = '';
 
     public string $pin = '';

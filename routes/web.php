@@ -90,8 +90,13 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
         Route::get('reports/exports/{export}', [ReportExportController::class, 'download'])->name('reports.exports.download');
     });
 
-    // Internal reference page for the design system.
-    Route::view('design-system', 'pages.design-system')->name('design-system');
+    // Internal reference page for the design system. Developers only: a
+    // production till has no use for a colour chart.
+    Route::get('design-system', function () {
+        abort_unless(app()->environment('local', 'testing'), 404);
+
+        return view('pages.design-system');
+    })->name('design-system');
 
     // The till itself. Every role that can log in can ring up a sale.
     Route::livewire('pos', 'pages::pos.index')->name('pos.index');
@@ -113,10 +118,16 @@ Route::middleware(['auth', 'verified', 'outlet', 'unlocked'])->group(function ()
         ->middleware('role:owner,manager,warehouse,kitchen')
         ->name('stock.waste');
 
+    // What every till accepts and what the bank keeps: the owner's call.
+    Route::livewire('payment-methods', 'pages::payments.methods')
+        ->middleware('role:owner')
+        ->name('payment-methods.index');
+
     // Editing the menu is a management job, not a cashier one.
     Route::middleware('role:owner,manager')->group(function () {
         Route::livewire('payments/review', 'pages::payments.review')->name('payments.review');
         Route::livewire('outlet/settings', 'pages::outlet.settings')->name('outlet.settings');
+        Route::livewire('staff', 'pages::staff.index')->name('staff.index');
         Route::get('payments/{payment}/proof', PaymentProofController::class)->name('payments.proof');
         Route::livewire('catalog', 'pages::catalog.index')->name('catalog.index');
         Route::get('catalog/import/template', CatalogImportTemplateController::class)->name('catalog.import.template');

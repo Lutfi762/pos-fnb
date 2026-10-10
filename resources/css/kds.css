@@ -204,7 +204,8 @@
 }
 
 [data-urgency='close'] .kds-clock {
-    color: var(--state-pending);
+    /* The text shade: plain amber is too faint on a white card. */
+    color: var(--state-pending-text);
 }
 
 [data-urgency='late'] .kds-clock {

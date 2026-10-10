@@ -4,8 +4,8 @@
         @include('partials.head')
         <meta name="meja-app" content="1">
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <body class="min-h-screen bg-canvas">
+        <flux:sidebar sticky collapsible="mobile" class="border-e border-line bg-surface">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -57,6 +57,16 @@
                         <flux:sidebar.item icon="qr-code" :href="route('payments.review')" :current="request()->routeIs('payments.*')" wire:navigate data-test="nav-payments-review">
                             {{ __('qris.review.nav') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="users" :href="route('staff.index')" :current="request()->routeIs('staff.*')" wire:navigate data-test="nav-staff">
+                            {{ __('staff.nav') }}
+                        </flux:sidebar.item>
+
+                        @if ($role === \App\Domain\Identity\Enums\Role::Owner)
+                            <flux:sidebar.item icon="credit-card" :href="route('payment-methods.index')" :current="request()->routeIs('payment-methods.*')" wire:navigate data-test="nav-payment-methods">
+                                {{ __('payment_methods.nav') }}
+                            </flux:sidebar.item>
+                        @endif
 
                         <flux:sidebar.item icon="cog-6-tooth" :href="route('outlet.settings')" :current="request()->routeIs('outlet.settings')" wire:navigate data-test="nav-outlet-settings">
                             {{ __('outlet.settings.nav') }}

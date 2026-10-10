@@ -13,7 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Sinkronisasi')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Sync')] class extends Component {
     /** The command a manager is writing a reason for, or null. */
     public ?string $resolving = null;
 
@@ -169,7 +169,7 @@ new #[Layout('layouts::app')] #[Title('Sinkronisasi')] class extends Component {
         @if ($this->devices->isEmpty())
             <flux:text class="text-content-muted">{{ __('sync.no_devices') }}</flux:text>
         @else
-            <div class="overflow-x-auto">
+            <div class="relative overflow-x-auto">
                 <table class="report-table">
                     <thead>
                         <tr>
@@ -285,7 +285,7 @@ new #[Layout('layouts::app')] #[Title('Sinkronisasi')] class extends Component {
         @if ($this->recent->isEmpty())
             <flux:text class="text-content-muted">{{ __('sync.no_recent') }}</flux:text>
         @else
-            <div class="overflow-x-auto">
+            <div class="relative overflow-x-auto">
                 <table class="report-table">
                     <thead>
                         <tr>

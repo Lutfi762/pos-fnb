@@ -11,6 +11,11 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
 
+    // Changing the PIN that approves refunds is worth a fresh password.
+    Route::livewire('settings/pin', 'pages::settings.pin')
+        ->middleware('password.confirm')
+        ->name('pin.edit');
+
     Route::livewire('settings/security', 'pages::settings.security')
         ->middleware([
             'password.confirm',

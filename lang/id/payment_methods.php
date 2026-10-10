@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'nav' => 'Metode pembayaran',
+    'title' => 'Metode pembayaran',
+    'subtitle' => 'Cara bayar yang muncul di layar kasir. Berlaku untuk semua outlet.',
+    'add' => 'Tambah metode',
+    'edit' => 'Ubah',
+    'edit_named' => 'Ubah :name',
+    'move_up' => 'Naikkan :name',
+    'move_down' => 'Turunkan :name',
+    'name' => 'Nama',
+    'type' => 'Jenis',
+    'kind' => 'Cara kerja',
+    'fee' => 'Potongan penyedia',
+    'fee_hint' => 'Persen yang dipotong bank atau gateway. Dipakai di laporan arus kas.',
+    'status' => 'Status',
+    'active' => 'Aktif',
+    'inactive' => 'Nonaktif',
+    'is_active' => 'Tampil di layar kasir',
+    'needs_reference' => 'Wajib isi nomor referensi',
+    'needs_reference_hint' => 'Kasir mengetik nomor approval atau referensi transfer.',
+    'qris_mode' => 'Jenis QRIS',
+    'gateway_hint' => 'Kode baru per bill dari gateway, lunas otomatis. Butuh internet dan akun gateway.',
+    'static_hint' => 'Stiker QRIS di kasir. Kasir mengisi referensi, manajer mencocokkan di Cek pembayaran.',
+    'save' => 'Simpan',
+    'cancel' => 'Batal',
+    'saved' => ':name disimpan.',
+    'fee_invalid' => 'Potongan harus antara 0 dan 10 persen.',
+    'cash_required' => 'Tunai tidak bisa dimatikan: kasir offline hanya menerima tunai.',
+    'kinds' => [
+        'cash' => 'Tunai',
+        'card' => 'Kartu (EDC)',
+        'transfer' => 'Transfer bank',
+        'ewallet' => 'Dompet digital',
+        'other' => 'Lainnya',
+        'manual' => 'Manual',
+        'gateway_qris' => 'QRIS dinamis',
+        'static_qris' => 'QRIS statis',
+    ],
+];

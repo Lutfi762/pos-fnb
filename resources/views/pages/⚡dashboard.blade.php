@@ -439,7 +439,7 @@ new #[Layout('layouts::app')] #[Title('Dashboard')] class extends Component {
             <article class="dash-card motion-rise" aria-labelledby="dash-stock-title">
                 <div class="dash-card-head">
                     <flux:heading id="dash-stock-title" size="lg">{{ __('dashboard.stock.title') }}</flux:heading>
-                    <flux:link :href="route('stock.index')" wire:navigate class="text-sm">{{ __('dashboard.stock.open') }}</flux:link>
+                    <flux:link :href="route('stock.index')" wire:navigate class="inline-flex min-h-11 items-center text-sm">{{ __('dashboard.stock.open') }}</flux:link>
                 </div>
 
                 @if ($this->stock->isEmpty())
@@ -473,7 +473,7 @@ new #[Layout('layouts::app')] #[Title('Dashboard')] class extends Component {
             <article class="dash-card motion-rise" aria-labelledby="dash-waste-title">
                 <div class="dash-card-head">
                     <flux:heading id="dash-waste-title" size="lg">{{ __('dashboard.waste.title') }}</flux:heading>
-                    <flux:link :href="route('stock.waste')" wire:navigate class="text-sm">{{ __('dashboard.waste.open') }}</flux:link>
+                    <flux:link :href="route('stock.waste')" wire:navigate class="inline-flex min-h-11 items-center text-sm">{{ __('dashboard.waste.open') }}</flux:link>
                 </div>
 
                 @if ($this->waste->isEmpty())
@@ -522,7 +522,7 @@ new #[Layout('layouts::app')] #[Title('Dashboard')] class extends Component {
                     @forelse ($issues as $key => $url)
                         <li wire:key="st-{{ $key }}">
                             <a href="{{ $url }}" wire:navigate class="dash-issue">
-                                <flux:icon.exclamation-triangle variant="mini" class="text-pending" />
+                                <flux:icon.exclamation-triangle variant="mini" class="text-pending-text" />
                                 <span>{{ __('dashboard.status.'.$key, ['count' => $status[$key]]) }}</span>
                             </a>
                         </li>
@@ -543,7 +543,7 @@ new #[Layout('layouts::app')] #[Title('Dashboard')] class extends Component {
             <article class="dash-card dash-card-wide motion-rise" aria-labelledby="dash-outlets-title">
                 <flux:heading id="dash-outlets-title" size="lg">{{ __('dashboard.outlets.title') }}</flux:heading>
 
-                <div class="overflow-x-auto">
+                <div class="relative overflow-x-auto">
                     <table class="report-table" data-test="outlets">
                         <thead>
                             <tr>

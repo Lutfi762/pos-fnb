@@ -15,7 +15,7 @@ return [
     'cart' => 'Keranjang',
     'cart_empty' => 'Keranjang masih kosong',
     'cart_empty_description' => 'Ketuk menu untuk mulai menulis pesanan.',
-    'items_count' => '{0} Belum ada item|:count item',
+    'items_count' => '{0} Belum ada item|[1,*] :count item',
     'quantity' => 'Jumlah',
     'increase' => 'Tambah satu',
     'decrease' => 'Kurangi satu',

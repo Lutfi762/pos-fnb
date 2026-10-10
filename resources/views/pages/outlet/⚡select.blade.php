@@ -9,7 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] #[Title('Pilih outlet')] class extends Component {
+new #[Layout('layouts::auth')] #[Title('Choose outlet')] class extends Component {
     /**
      * Outlets the signed in user may open.
      *

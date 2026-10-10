@@ -13,7 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Struk')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Receipt')] class extends Component {
     public Order $order;
 
     public bool $refunding = false;
@@ -140,7 +140,7 @@ new #[Layout('layouts::app')] #[Title('Struk')] class extends Component {
         $this->reset('refundPin');
 
         if ($approver === null) {
-            $this->addError('refundPin', __('refunds.pin_invalid'));
+            $this->addError('refundPin', $supervisors->refusal(__('refunds.pin_invalid')));
 
             return;
         }
@@ -323,8 +323,8 @@ new #[Layout('layouts::app')] #[Title('Struk')] class extends Component {
     {{-- Refund. The bill stays as it was; this writes a new record, dated
          today, and a supervisor signs it off with their PIN. --}}
     @if ($refunding)
-        <div class="pos-sheet-backdrop" wire:click.self="cancelRefund" data-test="refund-sheet">
-            <form wire:submit="refund" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="refund-title">
+        <div class="pos-sheet-backdrop" wire:click.self="cancelRefund" x-data @keydown.escape.window="$wire.cancelRefund()" data-test="refund-sheet">
+            <form wire:submit="refund" class="pos-sheet" role="dialog" aria-modal="true" aria-labelledby="refund-title" x-trap.noscroll="true">
                 <span class="pos-sheet-handle" aria-hidden="true"></span>
 
                 <flux:heading id="refund-title" size="lg">{{ __('refunds.heading', ['number' => $order->number]) }}</flux:heading>

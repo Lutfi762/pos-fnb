@@ -14,7 +14,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Stock')] class extends Component {
     #[Url(as: 'q', except: '')]
     public string $search = '';
 
@@ -242,7 +242,7 @@ new #[Layout('layouts::app')] #[Title('Stok')] class extends Component {
             :description="$search === '' && ! $lowOnly ? __('inventory.empty_description') : __('inventory.no_results_description')"
         />
     @else
-        <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+        <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="border-b border-line text-sm text-content-muted">

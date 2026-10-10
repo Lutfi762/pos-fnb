@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\RateLimiter;
  * A supervisor is anyone managing this outlet: its managers, and the owners,
  * who manage every outlet. The PIN is the whole check, so wrong guesses are
  * limited per outlet: five tries, then a five minute wait.
+ *
+ * Two supervisors with the same PIN cannot be told apart, so a PIN that fits
+ * more than one of them approves nothing: the record would name the wrong
+ * person. Staff management refuses such PINs; this guards older data.
  */
 class Supervisors
 {
@@ -22,23 +26,34 @@ class Supervisors
 
     public const DECAY_SECONDS = 300;
 
+    private bool $ambiguous = false;
+
     /**
      * The supervisor whose PIN this is, or null.
      */
     public function approve(Outlet $outlet, string $pin): ?User
     {
         $key = 'supervisor-pin:'.$outlet->getKey();
+        $this->ambiguous = false;
 
         if ($pin === '' || RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
             return null;
         }
 
-        $supervisor = User::query()
+        $matches = User::query()
             ->where('is_active', true)
             ->whereHas('outlets', fn ($query) => $query->whereIn('role', [Role::Owner->value, Role::Manager->value])
                 ->where(fn ($query) => $query->where('outlets.id', $outlet->getKey())->orWhere('role', Role::Owner->value)))
             ->get()
-            ->first(fn (User $user): bool => $user->verifyPin($pin));
+            ->filter(fn (User $user): bool => $user->verifyPin($pin));
+
+        if ($matches->count() > 1) {
+            $this->ambiguous = true;
+
+            return null;
+        }
+
+        $supervisor = $matches->first();
 
         if ($supervisor === null) {
             RateLimiter::hit($key, self::DECAY_SECONDS);
@@ -49,6 +64,24 @@ class Supervisors
         RateLimiter::clear($key);
 
         return $supervisor;
+    }
+
+    /**
+     * Whether the last refusal was a PIN shared by several supervisors,
+     * rather than a wrong one.
+     */
+    public function wasAmbiguous(): bool
+    {
+        return $this->ambiguous;
+    }
+
+    /**
+     * The message for the last refusal, in the caller's own words for a
+     * plain wrong PIN.
+     */
+    public function refusal(string $wrongPin): string
+    {
+        return $this->ambiguous ? __('staff.pin_ambiguous') : $wrongPin;
     }
 
     public function lockedOut(Outlet $outlet): bool

@@ -19,7 +19,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-new #[Layout('layouts::app')] #[Title('Laporan')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Reports')] class extends Component {
     /** Tabs and the report each one shows. */
     public const TABS = ['summary' => 'daily', 'products' => 'products', 'gross_profit' => 'gross_profit', 'cash_flow' => 'cash_flow'];
 

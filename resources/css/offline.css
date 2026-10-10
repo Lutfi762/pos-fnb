@@ -243,6 +243,7 @@
 
 .offline-search input {
     flex: 1;
+    align-self: stretch;
     min-width: 0;
     background: transparent;
     outline: none;

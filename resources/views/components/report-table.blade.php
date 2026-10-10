@@ -5,7 +5,7 @@
 | files are made from. Numbers right-aligned in tabular figures, a real
 | caption for screen readers, totals in the footer.
 --}}
-<div {{ $attributes->merge(['class' => 'overflow-x-auto rounded-xl border border-line bg-surface']) }}>
+<div {{ $attributes->merge(['class' => 'relative overflow-x-auto rounded-xl border border-line bg-surface']) }}>
     <table class="report-table">
         <caption class="sr-only">{{ $table->title }}</caption>
 

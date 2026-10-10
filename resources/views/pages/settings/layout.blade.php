@@ -3,6 +3,7 @@
         <flux:navlist aria-label="{{ __('Settings') }}">
             <flux:navlist.item :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
             <flux:navlist.item :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('pin.edit')" wire:navigate data-test="nav-own-pin">{{ __('staff.own_pin.nav') }}</flux:navlist.item>
             <flux:navlist.item :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
         </flux:navlist>
     </div>

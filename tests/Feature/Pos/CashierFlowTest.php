@@ -166,3 +166,34 @@ it('drops the table when the order turns into take away', function (): void {
         ->set('orderType', 'take_away')
         ->assertSet('tableId', '');
 });
+
+it('closes the sheet on screen once the choice is in the cart', function (): void {
+    $group = ModifierGroup::factory()->create(['min_select' => 1, 'max_select' => 1]);
+    $this->coffee->modifierGroups()->attach($group);
+    $less = Modifier::factory()->for($group, 'group')->create(['name' => 'Less Sugar', 'price' => 0]);
+
+    // Confirming reads the product, then clears it. The rendered page must
+    // follow the cleared state, not the value read earlier in the request.
+    Livewire::test('pages::pos.index')
+        ->call('tapProduct', $this->coffee->id)
+        ->assertSeeHtml('data-test="modifier-sheet"')
+        ->call('toggleModifier', $group->id, $less->id)
+        ->call('confirmModifiers')
+        ->assertDontSeeHtml('data-test="modifier-sheet"')
+        ->assertSee(trans_choice('pos.items_count', 1, ['count' => 1]));
+});
+
+it('counts the cart in words a cashier reads', function (): void {
+    expect(trans_choice('pos.items_count', 0, ['count' => 0]))->toBe('Belum ada item')
+        ->and(trans_choice('pos.items_count', 1, ['count' => 1]))->toBe('1 item')
+        ->and(trans_choice('pos.items_count', 12, ['count' => 12]))->toBe('12 item');
+});
+
+it('renders menu, cart, and sheet together on every tap', function (): void {
+    // A Livewire island re-renders only itself when an action fires inside
+    // it: a menu card inside one never updated the cart in the browser.
+    $template = file_get_contents(resource_path('views/pages/pos/⚡index.blade.php'))
+        .file_get_contents(resource_path('views/pages/pos/cart.blade.php'));
+
+    expect($template)->not->toContain('@island');
+});

@@ -14,6 +14,7 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="sheet-title"
+            x-trap.noscroll="true"
             :style="drag > 0 && `transform: translateY(${drag}px)`"
             @touchstart="start = $event.touches[0].clientY"
             @touchmove="drag = Math.max(0, $event.touches[0].clientY - start)"

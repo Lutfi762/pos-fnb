@@ -31,6 +31,10 @@
     --brand-accent: #3fa98a;
     --brand-contrast: #ffffff;
 
+    /* Paper, whatever the screen theme: printed receipts are black on white */
+    --print-paper: #ffffff;
+    --print-ink: #000000;
+
     /* Semantic state, kept separate from brand */
     --state-pending: #d98a2b;
     --state-pending-surface: #fdf3e6;
@@ -233,6 +237,25 @@
         transition-duration: 1ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/*
+| Touch targets. Compact controls are fine under a mouse on a laptop, but on a
+| phone or tablet, and anywhere on the till, every control is at least 44px.
+*/
+@media (pointer: coarse), (max-width: 64rem) {
+    [data-flux-button],
+    input[data-flux-control]:not([type='checkbox'], [type='radio'], [type='file']),
+    select[data-flux-control],
+    ui-select > button {
+        min-height: 2.75rem;
+    }
+}
+
+.pos-shell [data-flux-button],
+.pos-shell input[data-flux-control],
+.pos-shell select[data-flux-control] {
+    min-height: 2.75rem;
 }
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {

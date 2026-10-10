@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Pesanan pembelian')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Purchase order')] class extends Component {
     public ?PurchaseOrder $purchaseOrder = null;
 
     public string $supplierId = '';

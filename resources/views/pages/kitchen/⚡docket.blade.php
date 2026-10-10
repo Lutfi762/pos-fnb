@@ -12,7 +12,7 @@ use Livewire\Component;
  * on paper. Printed from the browser like the customer receipt, so a thermal
  * printer shared with the till needs no extra setup.
  */
-new #[Layout('layouts::app')] #[Title('Struk dapur')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Kitchen docket')] class extends Component {
     public Order $order;
 
     public function mount(Order $order): void

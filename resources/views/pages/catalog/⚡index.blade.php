@@ -15,7 +15,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new #[Layout('layouts::app')] #[Title('Katalog')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Catalog')] class extends Component {
     use WithFileUploads;
 
     #[Url(as: 'q', except: '')]
@@ -287,7 +287,7 @@ new #[Layout('layouts::app')] #[Title('Katalog')] class extends Component {
             :description="$search === '' && $categoryId === '' ? __('catalog.empty_description') : __('catalog.no_results_description')"
         />
     @else
-        <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+        <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="border-b border-line text-sm text-content-muted">

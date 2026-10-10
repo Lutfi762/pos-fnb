@@ -30,9 +30,9 @@
             <flux:heading id="ds-type" size="lg" class="font-display">{{ __('design.typography') }}</flux:heading>
 
             <div class="mt-3 space-y-2 rounded-lg border border-line bg-surface p-4">
-                <p class="font-display text-3xl font-semibold">Bricolage Grotesque</p>
-                <p class="text-base">Plus Jakarta Sans — {{ __('design.body_sample') }}</p>
-                <p class="font-mono">JetBrains Mono — ORD-000123</p>
+                <p class="font-display text-3xl font-semibold">{{ __('design.font_display') }}</p>
+                <p class="text-base">{{ __('design.font_body') }}</p>
+                <p class="font-mono">{{ __('design.font_mono') }}</p>
                 <p class="numeric text-xl">{{ \App\Support\Money::format(1234567) }}</p>
             </div>
         </section>
@@ -64,10 +64,10 @@
             </div>
 
             <div class="mt-4 grid max-w-md gap-3">
-                <flux:input :label="__('design.field')" placeholder="Kopi Susu" />
+                <flux:input :label="__('design.field')" :placeholder="__('design.field_sample')" />
                 <flux:select :label="__('design.choice')">
-                    <flux:select.option>Dine in</flux:select.option>
-                    <flux:select.option>Take away</flux:select.option>
+                    <flux:select.option>{{ __('orders.type.dine_in') }}</flux:select.option>
+                    <flux:select.option>{{ __('orders.type.take_away') }}</flux:select.option>
                 </flux:select>
             </div>
         </section>

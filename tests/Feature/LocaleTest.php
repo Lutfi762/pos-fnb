@@ -57,3 +57,12 @@ it('offers the switcher on the locked screen so a new shift can change it', func
         ->assertOk()
         ->assertSee('data-test="language-switcher"', escape: false);
 });
+
+it('speaks Indonesian in validation and sign-in errors', function (): void {
+    expect(__('validation.required', ['attribute' => 'meja']))->toBe('Meja wajib diisi.')
+        ->and(__('validation.min.string', ['attribute' => 'kata sandi', 'min' => 8]))->toBe('Kata sandi minimal 8 karakter.')
+        ->and(__('auth.failed'))->toBe('Email atau kata sandi salah.');
+
+    $this->post(route('login.store'), ['email' => 'siapa@meja.test', 'password' => 'salah'])
+        ->assertSessionHasErrors(['email' => 'Email atau kata sandi salah.']);
+});

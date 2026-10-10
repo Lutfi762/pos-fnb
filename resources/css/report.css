@@ -108,6 +108,8 @@
 .report-panel {
     display: flex;
     flex-direction: column;
+    /* A grid cell may shrink below its table; the table scrolls instead. */
+    min-width: 0;
     gap: 0.875rem;
     border: 1px solid var(--border);
     border-radius: 0.75rem;
@@ -116,7 +118,7 @@
 
 .report-columns {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
     gap: 1.5rem;
 }
 

@@ -20,7 +20,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new #[Layout('layouts::app')] #[Title('Pembayaran')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Payment')] class extends Component {
     use WithFileUploads;
 
     public Order $order;

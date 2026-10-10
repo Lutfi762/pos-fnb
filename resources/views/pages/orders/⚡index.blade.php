@@ -17,7 +17,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::app')] #[Title('Transaksi')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Transactions')] class extends Component {
     use WithPagination;
 
     #[Url(as: 'dari', except: '')]
@@ -187,7 +187,7 @@ new #[Layout('layouts::app')] #[Title('Transaksi')] class extends Component {
     @if ($this->orders->isEmpty())
         <x-empty-state icon="receipt-percent" :heading="__('orders.empty_heading')" :description="__('orders.empty_description')" />
     @else
-        <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+        <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
             <table class="report-table" data-test="orders-table">
                 <caption class="sr-only">{{ __('orders.title') }}</caption>
                 <thead>

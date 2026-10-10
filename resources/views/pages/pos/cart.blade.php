@@ -1,7 +1,6 @@
 {{--
-    The cart. Its own island, so tapping a menu card never redraws the grid
-    behind it, and the quantity buttons move the number on screen first and
-    tell the server afterwards.
+    The cart. The quantity buttons move the number on screen first and tell
+    the server afterwards.
 --}}
 <section
     class="pos-cart"
@@ -46,11 +45,9 @@
             <flux:error name="tableId" />
         @endif
 
-        @island(name: 'cart')
-            @include('pages.pos.lines')
+        @include('pages.pos.lines')
 
-            @include('pages.pos.summary')
-        @endisland
+        @include('pages.pos.summary')
     </div>
 
     @include('pages.pos.tables')

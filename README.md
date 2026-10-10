@@ -16,6 +16,42 @@ npm run dev
 
 Buka `http://meja.test`.
 
+### Akun demo
+
+Seeder membuat satu akun per peran di outlet pertama. Kata sandi semuanya
+`password`; PIN dibedakan karena supervisor dikenali dari PIN-nya saja.
+
+| Peran | Email | PIN |
+| --- | --- | --- |
+| Owner | `owner@meja.test` | `246810` |
+| Manajer | `manajer@meja.test` | `135790` |
+| Kasir | `kasir@meja.test` | `102030` |
+| Dapur | `dapur@meja.test` | `112233` |
+| Gudang | `gudang@meja.test` | `445566` |
+
+Ganti semuanya sebelum dipakai sungguhan, atau buat akun baru dari menu **Staf**.
+
+## Staf, PIN, dan pengaturan owner
+
+- **Staf** (`/staff`, owner dan manajer): tambah orang, pilih peran, isi kata
+  sandi awal dan PIN 6 angka, nonaktifkan. Manajer hanya mengatur kasir, dapur,
+  dan gudang di outletnya sendiri; owner mengatur semua peran dan boleh
+  menempatkan satu orang di beberapa outlet. Akun yang dinonaktifkan langsung
+  keluar dari sesi yang sedang berjalan.
+- PIN dipakai untuk membuka kunci layar dan, bagi manajer/owner, menyetujui
+  diskon besar, refund, dan selisih kas. Aplikasi menolak PIN yang sudah dipakai
+  rekan satu outlet (owner dihitung rekan di semua outlet) dan PIN yang mudah
+  ditebak (`000000`, `123456`). Setiap orang bisa mengganti PIN-nya sendiri di
+  **Pengaturan > PIN**.
+- **Pengaturan outlet** (`/outlet/settings`): nama, alamat, judul dan catatan
+  kaki struk, dan apakah dapur memakai layar (manajer dan owner). Pajak, biaya
+  layanan, harga termasuk pajak, dan pembulatan hanya bisa diubah owner, dan
+  berlaku mulai bill berikutnya.
+- **Metode pembayaran** (`/payment-methods`, owner): aktif/nonaktif, potongan
+  penyedia, urutan di layar kasir, QRIS dinamis atau statis, dan metode manual
+  baru (EDC, dompet digital). Tunai tidak bisa dimatikan karena kasir offline
+  hanya menerima tunai.
+
 ## Layar dapur (KDS)
 
 Papan dapur di `/kitchen` memakai websocket lewat Laravel Reverb. Reverb adalah
@@ -163,6 +199,122 @@ composer require dompdf/dompdf
 
 Tanpa dompdf, tombol PDF membuka halaman siap cetak yang langsung memunculkan
 dialog cetak; pilih "Simpan sebagai PDF".
+
+## Cadangan dan pemulihan
+
+```bash
+php artisan meja:backup            # satu cadangan sekarang
+php artisan meja:backup --keep=30  # simpan 30 terakhir
+```
+
+Cadangan ditulis ke `BACKUP_PATH` (bawaan `storage/app/backups`) dengan nama
+`meja-YYYYMMDD-HHMMSS.sql.gz`, dan yang lebih lama dari `BACKUP_KEEP` (bawaan 14)
+dihapus. Scheduler menjalankannya tiap hari pukul 04.30. MySQL disalin dengan
+`mysqldump --single-transaction`, jadi kasir tetap bisa berjualan selama proses.
+Di Laragon, kalau `mysqldump` tidak ditemukan oleh Task Scheduler, isi
+`BACKUP_MYSQLDUMP=C:\laragon\bin\mysql\mysql-8.x\bin\mysqldump.exe`.
+
+Arahkan `BACKUP_PATH` ke disk lain atau folder yang tersinkron (Google Drive,
+OneDrive): cadangan di disk yang sama ikut hilang kalau disknya rusak.
+
+Memulihkan (hentikan dulu antrean dan Reverb, lalu):
+
+```bash
+# MySQL / MariaDB
+gunzip -k meja-20261010-043000.sql.gz
+mysql -u root -p meja < meja-20261010-043000.sql
+
+# SQLite
+gunzip -c meja-20261010-043000.sqlite.gz > database/database.sqlite
+
+php artisan migrate            # bila cadangan lebih lama dari kode
+php artisan meja:rebuild-summaries
+```
+
+Coba pulihkan ke database terpisah sebulan sekali; cadangan yang belum pernah
+dicoba dipulihkan belum tentu bisa dipakai.
+
+## Deploy
+
+### Satu outlet dengan Laragon (laptop kasir)
+
+1. `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=http://meja.test`
+   (atau IP laptop bila tablet ikut memakai), `DB_CONNECTION=mysql`.
+2. `composer install --no-dev --optimize-autoloader`, `npm ci`, `npm run build`,
+   `php artisan migrate --force`, `php artisan optimize`.
+3. Task Scheduler Windows, tiap menit: `php C:\laragon\www\meja\artisan schedule:run`.
+4. Dua proses yang harus hidup sejak login Windows (Task Scheduler "At log on"):
+   `php artisan queue:work --tries=3` dan `php artisan reverb:start`.
+
+### VPS (beberapa outlet)
+
+Ubuntu 24.04, Nginx, PHP 8.4-FPM (ekstensi `intl`, `zip`, `gd`, `pdo_mysql`,
+`bcmath`), MySQL 8, Node 22 hanya untuk build.
+
+```bash
+git clone <repo> /var/www/meja && cd /var/www/meja
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+cp .env.example .env && php artisan key:generate
+php artisan migrate --force
+php artisan storage:link
+php artisan optimize
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+Daftar cek `.env` produksi:
+
+- `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...` (HTTPS wajib:
+  kasir offline memakai service worker, yang hanya jalan di HTTPS).
+- `DB_*`, `QUEUE_CONNECTION=database`, `CACHE_STORE=database` atau `redis`.
+- `SESSION_SECURE_COOKIE=true`.
+- `BROADCAST_CONNECTION=reverb` dan `REVERB_*`; pasang Nginx sebagai proxy
+  websocket ke port Reverb.
+- `PAYMENT_GATEWAY=xendit`, `XENDIT_SECRET_KEY`, `XENDIT_WEBHOOK_TOKEN`.
+- `BACKUP_PATH` di luar folder aplikasi, `MAIL_*` untuk reset kata sandi.
+
+Cron (`crontab -u www-data -e`):
+
+```
+* * * * * cd /var/www/meja && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Supervisor (`/etc/supervisor/conf.d/meja.conf`):
+
+```ini
+[program:meja-queue]
+command=php /var/www/meja/artisan queue:work --tries=3 --max-time=3600
+user=www-data
+autostart=true
+autorestart=true
+numprocs=1
+
+[program:meja-reverb]
+command=php /var/www/meja/artisan reverb:start --host=127.0.0.1 --port=8080
+user=www-data
+autostart=true
+autorestart=true
+```
+
+Setiap rilis: `git pull`, `composer install --no-dev -o`, `npm ci && npm run build`,
+`php artisan migrate --force`, `php artisan optimize`, lalu
+`supervisorctl restart meja-queue meja-reverb`.
+
+## Animasi
+
+Semua animasi CSS (tanpa pustaka animasi; Motion One tidak dipakai supaya kasir
+offline tidak mengunduh skrip tambahan) dan hanya berjalan saat
+`prefers-reduced-motion` tidak aktif:
+
+- `motion-rise`: kartu dan keadaan kosong muncul naik pelan.
+- `motion-draw`, `meja-grow`: garis dan batang grafik dashboard tumbuh sekali.
+- Angka KPI dashboard menghitung naik (`countUp`); dilewati bila reduced motion.
+- `motion-pulse-soft`, `motion-shimmer`: penanda menunggu dan kerangka muat.
+- Lembar bawah POS (`meja-sheet-up`), tombol bayar, kartu tiket KDS
+  (`kds-edge` untuk tiket terlambat), badge koneksi offline.
+
+Dengan reduced motion, `app.css` memotong semua durasi menjadi 1 ms, dan grafik
+digambar tanpa animasi.
 
 ## Gerbang sebelum commit
 

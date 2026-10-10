@@ -14,7 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Shift kasir')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Cashier shift')] class extends Component {
     /** A variance bigger than this needs a manager to sign the count off. */
     public const APPROVAL_THRESHOLD = 10000;
 
@@ -165,11 +165,12 @@ new #[Layout('layouts::app')] #[Title('Shift kasir')] class extends Component {
         if ($this->needsApproval) {
             $this->validate(['note' => ['required', 'string', 'max:500']], attributes: ['note' => __('shifts.note')]);
 
-            $approver = app(Supervisors::class)->approve($this->outlet, $this->managerPin);
+            $supervisors = app(Supervisors::class);
+            $approver = $supervisors->approve($this->outlet, $this->managerPin);
             $this->reset('managerPin');
 
             if ($approver === null) {
-                $this->addError('managerPin', __('shifts.pin_invalid'));
+                $this->addError('managerPin', $supervisors->refusal(__('shifts.pin_invalid')));
 
                 return;
             }

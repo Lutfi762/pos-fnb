@@ -11,7 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Pembelian')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Purchases')] class extends Component {
     #[Url(as: 'status', except: '')]
     public string $status = '';
 
@@ -86,7 +86,7 @@ new #[Layout('layouts::app')] #[Title('Pembelian')] class extends Component {
             :description="__('purchasing.empty_description')"
         />
     @else
-        <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+        <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="border-b border-line text-sm text-content-muted">

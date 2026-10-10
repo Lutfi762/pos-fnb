@@ -13,7 +13,7 @@ use Livewire\Attributes\Session;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::kitchen')] #[Title('Dapur')] class extends Component {
+new #[Layout('layouts::kitchen')] #[Title('Kitchen')] class extends Component {
     /**
      * Which station this screen is showing. Remembered per device, because a
      * screen bolted above the bar is the bar screen every shift, forever.

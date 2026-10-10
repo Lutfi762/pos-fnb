@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureOutletSelected;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\EnsureScreenUnlocked;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SignOutInactiveUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [SetLocale::class]);
+        $middleware->web(append: [SetLocale::class, SignOutInactiveUser::class]);
 
         // The payment gateway cannot hold a CSRF token; its webhooks prove
         // themselves with a signature instead.

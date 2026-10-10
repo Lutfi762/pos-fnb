@@ -27,7 +27,7 @@ use Livewire\Attributes\Session;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
+new #[Layout('layouts::app')] #[Title('Cashier')] class extends Component {
     /**
      * The cart, kept as plain arrays rather than models.
      *
@@ -200,6 +200,10 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
     public function closeModifiers(): void
     {
         $this->reset('editingLine', 'modifierProductId', 'modifierVariantId', 'chosenModifiers', 'lineNote');
+
+        // Computed values are kept for the whole request. Confirming read the
+        // product a moment ago; without this the sheet renders again, empty.
+        unset($this->modifierProduct, $this->modifierUnitPrice);
     }
 
     /**
@@ -470,12 +474,13 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             return false;
         }
 
-        $supervisor = app(Supervisors::class)->approve($this->outlet, $this->supervisorPin);
+        $supervisors = app(Supervisors::class);
+        $supervisor = $supervisors->approve($this->outlet, $this->supervisorPin);
 
         $this->reset('supervisorPin');
 
         if ($supervisor === null) {
-            $this->addError('supervisorPin', __('pos.pin_invalid'));
+            $this->addError('supervisorPin', $supervisors->refusal(__('pos.pin_invalid')));
 
             return false;
         }
@@ -708,7 +713,9 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
         </div>
     </section>
 
-    {{-- Menu grid, its own island so a cart tap never redraws 40 cards. --}}
+    {{-- Menu grid. Not a Livewire island: an action fired inside an island
+         re-renders only that island, so a tap here would never reach the cart
+         or open the modifier sheet. A full morph of a few dozen cards is cheap. --}}
     <section class="pos-menu" aria-label="{{ __('pos.menu') }}">
         <flux:input
             wire:model.live.debounce.150ms="search"
@@ -721,29 +728,27 @@ new #[Layout('layouts::app')] #[Title('Kasir')] class extends Component {
             data-test="pos-search"
         />
 
-        @island(name: 'menu')
-            <div class="pos-grid" data-test="menu-grid">
-                @forelse ($this->visibleMenu as $product)
-                    <button
-                        type="button"
-                        wire:key="p-{{ $product->id }}"
-                        wire:click="tapProduct('{{ $product->id }}')"
-                        class="pos-card"
-                        data-test="menu-card"
-                    >
-                        <span class="pos-card-name">{{ $product->name }}</span>
-                        <x-money :amount="$product->variants->first()?->priceFor($this->outlet) ?? 0" class="pos-card-price" />
-                    </button>
-                @empty
-                    <x-empty-state
-                        class="pos-grid-empty"
-                        icon="magnifying-glass"
-                        :heading="__('pos.no_results_heading')"
-                        :description="__('pos.no_results_description')"
-                    />
-                @endforelse
-            </div>
-        @endisland
+        <div class="pos-grid" data-test="menu-grid">
+            @forelse ($this->visibleMenu as $product)
+                <button
+                    type="button"
+                    wire:key="p-{{ $product->id }}"
+                    wire:click="tapProduct('{{ $product->id }}')"
+                    class="pos-card"
+                    data-test="menu-card"
+                >
+                    <span class="pos-card-name">{{ $product->name }}</span>
+                    <x-money :amount="$product->variants->first()?->priceFor($this->outlet) ?? 0" class="pos-card-price" />
+                </button>
+            @empty
+                <x-empty-state
+                    class="pos-grid-empty"
+                    icon="magnifying-glass"
+                    :heading="__('pos.no_results_heading')"
+                    :description="__('pos.no_results_description')"
+                />
+            @endforelse
+        </div>
     </section>
 
     @include('pages.pos.cart')

@@ -164,7 +164,7 @@ new #[Layout('layouts::app')] #[Title('Waste')] class extends Component {
     @if ($this->entries->isEmpty())
         <x-empty-state icon="trash" :heading="__('waste.empty_heading')" :description="__('waste.empty_description')" />
     @else
-        <div class="overflow-x-auto rounded-xl border border-line bg-surface">
+        <div class="relative overflow-x-auto rounded-xl border border-line bg-surface">
             <table class="report-table" data-test="waste-table">
                 <thead>
                     <tr>
